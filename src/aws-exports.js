@@ -7,8 +7,8 @@ export default {
     oauth: {
       domain: 'meteo-auth.auth.eu-north-1.amazoncognito.com',
       scope: ['email', 'openid', 'profile'],
-      redirectSignIn: 'http://localhost:5173/',
-      redirectSignOut: 'http://localhost:5173/',
+      redirectSignIn: 'https://meteo-web-app-nine.vercel.app/',
+      redirectSignOut: 'https://meteo-web-app-nine.vercel.app/',
       responseType: 'code'
     }
   },
