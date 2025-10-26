@@ -1,10 +1,12 @@
-import react from '@vitejs/plugin-react';
-import {defineConfig} from 'vite';
+import react from '@vitejs/plugin-react'
+import {defineConfig} from 'vite'
 
 export default defineConfig({
   plugins: [react()],
+  // 👉 to jest właściwe miejsce na base
+  base: process.env.VITE_BASE_PATH ?? '/',
+  // (opcjonalnie) jeśli jakieś paczki oczekują `global`:
   define: {
-    global: 'globalThis',  // 🧩 naprawia błąd "global is not defined"
-    base: process.env.VITE_BASE_PATH || '/meteo-app/'
+    global: 'globalThis',
   },
-});
+})
