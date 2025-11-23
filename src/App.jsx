@@ -2,6 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { Amplify, Auth, Storage, Hub, PubSub } from "aws-amplify";
 import { AWSIoTProvider } from "@aws-amplify/pubsub";
 import awsconfig from "./aws-exports";
+import "./NavBar.css";
+import "./App.css";
+import "./Landing.css";
+import "./Footer.css";
+import NavBar from "./components/NavBar";
+import Landing from "./components/Landing";
+import Footer from "./components/Footer";
+
 
 // 1) Amplify (Auth, Storage)
 Amplify.configure(awsconfig);
@@ -101,6 +109,7 @@ export default function App() {
   const handleSignIn = async () => {
     try {
       await Auth.federatedSignIn();
+      
     } catch (err) {
       console.error("Błąd logowania:", err);
     }
@@ -222,14 +231,17 @@ export default function App() {
 
   // ===== UI =====
   return (
-    <div style={{ padding: 24 }}>
-      <h1>Meteo Dashboard</h1>
-
+    <div>
       {!user ? (
-        <button onClick={handleSignIn}>🔐 Zaloguj się</button>
-      ) : (
         <>
-          <p>
+          <NavBar LogoutLoginText="Log In" onAuthClick={handleSignIn} />
+          <Landing onSignIn={handleSignIn} />
+          <Footer />
+        </>
+      ) : (
+          <>
+            <NavBar LogoutLoginText="Log Out" onAuthClick={handleSignOut} />
+            <p>
             Zalogowano jako: <b>{user.attributes?.email || user.username}</b>
           </p>
           <button onClick={handleSignOut}>🚪 Wyloguj</button>

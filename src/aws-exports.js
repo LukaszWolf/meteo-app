@@ -9,6 +9,8 @@ export default {
       scope: ['email', 'openid', 'profile'],
       redirectSignIn: 'https://meteo-web-app-nine.vercel.app/',
       redirectSignOut: 'https://meteo-web-app-nine.vercel.app/',
+      // redirectSignIn: 'http://localhost:5173/',
+      // redirectSignOut: 'http://localhost:5173/',
       responseType: 'code'
     }
   },
