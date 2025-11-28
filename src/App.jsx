@@ -6,9 +6,16 @@ import "./NavBar.css";
 import "./App.css";
 import "./Landing.css";
 import "./Footer.css";
+import "./WeatherDashboard.css";
+import "./WeatherApiDashboard.css";
+import "./CitySearch.css";
 import NavBar from "./components/NavBar";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
+import WeatherDashboard from "./components/WeatherDashboard";
+import WeatherApiDashboard from "./components/WeatherApiDashboard";
+import CitySearch from "./components/CitySearch";
+import HistoryPanel from "./components/HistoryPanel";
 
 
 // 1) Amplify (Auth, Storage)
@@ -49,8 +56,25 @@ export default function App() {
   const [claimStatus, setClaimStatus] = useState("");
   const claimSubRef = useRef(null);
 
+    //dane do pogody
+  const [measurement, setMeasurement] = useState(null);
+  const [history, setHistory] = useState([]);
+
   // ===== Helpers =====
 
+    const mapJsonToDashboardData = (json) => {
+    return {
+      outdoorTemp: json.outdoorTemp ?? json.temp ?? null,
+      humidity: json.humidity ?? json.hum ?? null,
+      pressure: json.pressure ?? null,
+      uvIndex: json.uvIndex ?? json.uv ?? null,
+      indoorTemp: json.indoorTemp ?? null,
+      indoorHumidity: json.indoorHumidity ?? json.indoorHum ?? null,
+      lastUpdate: json.ts ?? null,
+      userId: json.userId ?? null,
+      stationId: json.stationId ?? null,
+    };
+  };
   // Przypięcie IoT policy do usera (idempotentne)
   const ensureIoTPolicyAttached = async () => {
     try {
@@ -127,26 +151,80 @@ export default function App() {
   };
 
   const loadFiles = async () => {
+    // try {
+    //   const creds = await Auth.currentCredentials();
+    //   const id = creds.identityId; // eu-north-1:...
+    //   console.log("[s3] IdentityId:", id);
+    //   const { results } = await Storage.list(`users/${id}/stations/`, {
+    //     level: "public",
+    //   });
+    //   console.log("[s3] list results:", results);
+    //   setFiles(results || []);
+    // } catch (err) {
+    //   console.error("Błąd ładowania plików:", err);
+    //   setFiles([]);
+    // }
+    // Tryb produkcyjny
     try {
       const creds = await Auth.currentCredentials();
-      const id = creds.identityId; // eu-north-1:...
+      const id = creds.identityId;
       console.log("[s3] IdentityId:", id);
+
       const { results } = await Storage.list(`users/${id}/stations/`, {
         level: "public",
       });
+      
       console.log("[s3] list results:", results);
       setFiles(results || []);
+
+      if (results && results.length > 0) {
+        const historyData = [];
+        
+        for (const file of results) {
+          try {
+            const result = await Storage.get(file.key, { download: true, level: "public" });
+            const text = await result.Body.text();
+            const obj = JSON.parse(text);
+            const dashData = mapJsonToDashboardData(obj);
+            historyData.push(dashData);
+          } catch (err) {
+            console.warn(`Błąd ładowania ${file.key}:`, err);
+          }
+        }
+        
+        // Sortujemy historię chronologicznie
+        historyData.sort((a, b) => (a.lastUpdate || 0) - (b.lastUpdate || 0));
+        setHistory(historyData);
+        
+        // Ustawiamy najnowszy pomiar jako measurement
+        if (historyData.length > 0) {
+          setMeasurement(historyData[historyData.length - 1]);
+        }
+      }
     } catch (err) {
       console.error("Błąd ładowania plików:", err);
       setFiles([]);
+      setHistory([]);
     }
   };
 
   const fetchData = async (key) => {
-    try {
+    // try {
+    //   const result = await Storage.get(key, { download: true, level: "public" });
+    //   const text = await result.Body.text();
+    //   setFileContent(text);
+    //   setError("");
+    // } catch (err) {
+    //   setError(String(err));
+    // }
+     try {
       const result = await Storage.get(key, { download: true, level: "public" });
       const text = await result.Body.text();
       setFileContent(text);
+      
+      const obj = JSON.parse(text);
+      const dashData = mapJsonToDashboardData(obj);
+      setMeasurement(dashData);
       setError("");
     } catch (err) {
       setError(String(err));
@@ -241,6 +319,14 @@ export default function App() {
       ) : (
           <>
             <NavBar LogoutLoginText="Log Out" onAuthClick={handleSignOut} />
+             {measurement && (
+            <WeatherDashboard data={measurement} />
+          )}
+          
+          <CitySearch />
+          <HistoryPanel history={history} />
+          <WeatherApiDashboard />
+          <Footer/>
             <p>
             Zalogowano jako: <b>{user.attributes?.email || user.username}</b>
           </p>

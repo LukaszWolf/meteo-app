@@ -1,17 +1,15 @@
-/* 1) pełna wysokość dokumentu */
+
 html, body, #root {
   height: 100%;
   min-height: 100%;
 }
 
-/* 2) NIE ustawiaj tła na :root */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  /* background-color: #242424;  ← USUŃ */
   margin: 0;
   padding: 0;
   font-synthesis: none;
@@ -20,7 +18,7 @@ html, body, #root {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 3) gradient na całej stronie (również pod navbarem) */
+
 body {
   margin: 0;
   min-width: 320px;
@@ -28,11 +26,10 @@ body {
   background: linear-gradient(180deg, #95d7df 0%, #5e74a1 50%, #95d7df 100%);
 }
 
-/* 4) jasny motyw też bez tła na :root – jeśli chcesz inny gradient, ustaw go na body */
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    /* background-color: #ffffff; ← USUŃ */
+ 
   }
   body {
     background: linear-gradient(180deg, #eaf6ff 0%, #cfe3ff 60%, #eaf6ff 100%);

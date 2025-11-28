@@ -1,0 +1,159 @@
+
+.dash-main-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); 
+  gap: 16px;
+  color: inherit;
+}
+
+
+@media (max-width: 900px) {
+  .dash-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-card {
+  background: rgba(11, 18, 32, 0.82);
+  border: 1px solid rgba(125, 140, 160, 0.28);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  color: #f9fafb;
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-card::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(
+    circle at top left,
+    rgba(148, 197, 255, 0.22),
+    transparent 65%
+  );
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.dash-outdoor {
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(56, 189, 248, 0.28),
+      rgba(37, 99, 235, 0.16)
+    ),
+    rgba(11, 18, 32, 0.94);
+}
+
+.dash-indoor {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(52, 211, 153, 0.3),
+      rgba(59, 130, 246, 0.12)
+    ),
+    rgba(11, 18, 32, 0.94);
+}
+
+@media (max-width: 900px) {
+  .dash-outdoor {
+    grid-column: span 1;
+  }
+}
+
+.dash-section-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.78;
+  margin-bottom: 10px;
+}
+
+.dash-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dash-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.95);
+  flex-shrink: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 70%;
+}
+
+.dash-icon-house {
+  background-image: url("/meteo-app/img/weather/house.png");
+}
+
+.dash-icon-weather {
+  background-image: url("/meteo-app/img/weather/cloud.png");
+}
+
+
+.dash-outdoor.uv-low .dash-icon-weather {
+  background-image: url("/meteo-app/img/weather/partly.png");   
+}
+
+.dash-outdoor.uv-medium .dash-icon-weather {
+  background-image: url("/meteo-app/img/weather/sun.png");    
+}
+
+.dash-outdoor.uv-high .dash-icon-weather,
+.dash-outdoor.uv-veryhigh .dash-icon-weather {
+  background-image: url("/meteo-app/img/weather/sun.png");
+  box-shadow: 0 0 25px rgba(250, 204, 21, 0.85);              
+}
+
+
+.dash-outdoor.outdoor-rain .dash-icon-weather {
+  background-image: url("/meteo-app/img/weather/rain.png");
+}
+
+
+
+.dash-values {
+  flex: 1;
+}
+
+.dash-temp-main {
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.dash-sub {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+
+@media (max-width: 600px) {
+  .dash-card {
+    padding: 14px 14px 16px;
+  }
+
+  .dash-icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .dash-temp-main {
+    font-size: 26px;
+  }
+}

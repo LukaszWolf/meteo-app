@@ -34,6 +34,8 @@
   font-weight: 700;            /* ← POGRUBIENIE telefonu i e-maila */
 }
 
-.footer-contact a:hover { text-decoration: underline; }
+.footer-contact a:hover {
+  text-decoration: underline;
+ }
 
 .dot { opacity: .6; }
