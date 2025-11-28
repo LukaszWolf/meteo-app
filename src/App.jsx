@@ -7,7 +7,7 @@ import "./App.css";
 import "./Landing.css";
 import "./Footer.css";
 import "./WeatherDashboard.css";
-import "./WeatherApiDashboard.css";
+
 import "./CitySearch.css";
 import NavBar from "./components/NavBar";
 import Landing from "./components/Landing";
