@@ -320,7 +320,7 @@ export default function App() {
           <>
             <NavBar LogoutLoginText="Wyloguj się" onAuthClick={handleSignOut} />
             
-            <section id="dashboard" className="page-section">
+            <section id="live-data" className="page-section">
             {measurement && <WeatherDashboard data={measurement} />}
             </section>
           
