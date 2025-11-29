@@ -312,20 +312,25 @@ export default function App() {
     <div>
       {!user ? (
         <>
-          <NavBar LogoutLoginText="Log In" onAuthClick={handleSignIn} />
+          <NavBar LogoutLoginText="Zaloguj się" onAuthClick={handleSignIn} />
           <Landing onSignIn={handleSignIn} />
           <Footer />
         </>
       ) : (
           <>
-            <NavBar LogoutLoginText="Log Out" onAuthClick={handleSignOut} />
-             {measurement && (
-            <WeatherDashboard data={measurement} />
-          )}
+            <NavBar LogoutLoginText="Wyloguj się" onAuthClick={handleSignOut} />
+            
+            <section id="dashboard" className="page-section">
+            {measurement && <WeatherDashboard data={measurement} />}
+            </section>
           
+            <section id="forecast" className="page-section">
           <CitySearch />
-          <HistoryPanel history={history} />
           <WeatherApiDashboard />
+            </section>
+                    <section id="history" className="page-section">
+          <HistoryPanel history={history} />
+        </section>
           <Footer/>
             <p>
             Zalogowano jako: <b>{user.attributes?.email || user.username}</b>

@@ -57,12 +57,12 @@ export default function WeatherDashboard({ data }) {
             <div className="dash-temp-main">
               {indoorTemp != null ? `${indoorTemp.toFixed(1)} °C` : "—"}
             </div>
-            <div className="dash-sub">
+            {/* <div className="dash-sub">
               Wilgotność:{" "}
               {indoorHumidity != null
                 ? `${indoorHumidity.toFixed(0)} %`
                 : "—"}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

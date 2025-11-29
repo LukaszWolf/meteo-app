@@ -2,12 +2,14 @@ export default function NavBar({ LogoutLoginText, onAuthClick }) {
   return (
     <header className="site-header">
       <div className="container">
-        <a className="brand" href="/">Meteo<span>•</span>Dashboard</a>
+        <a className="brand" href="/">Meteo<span>•</span>App</a>
         <nav aria-label="Główne">
           <ul className="menu">
-            <li><a href="#dashboard">Dashboard</a></li>
-            <li><a href="#menu">Menu</a></li>
-            <li><a href="#logs">Logs</a></li>
+            <li><a href="#dashboard">Stacja</a></li>
+            <li><span>•</span></li>
+            <li><a href="#forecast">Prognoza pogody</a></li>
+            <li><span>•</span></li>
+            <li><a href="#logs">Historia</a></li>
             <li>
               <button className="cta" onClick={onAuthClick}>
                 {LogoutLoginText}
