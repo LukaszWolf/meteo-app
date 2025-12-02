@@ -1,7 +1,7 @@
 export default function Footer({
-  githubUrl = "https://github.com/LukaszWolf?tab=repositories", // ← podmień
-  phone = "+48 698 215 704",                               // ← podmień
-  email = "wolflukasz321@gmail.com",                        // ← podmień
+  githubUrl = "https://github.com/LukaszWolf?tab=repositories", 
+  phone = "+48 698 215 704",                       
+  email = "wolflukasz321@gmail.com",                       
 }) {
   return (
     <footer className="app-footer">

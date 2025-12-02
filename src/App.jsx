@@ -62,19 +62,30 @@ export default function App() {
 
   // ===== Helpers =====
 
-    const mapJsonToDashboardData = (json) => {
-    return {
-      outdoorTemp: json.outdoorTemp ?? json.temp ?? null,
-      humidity: json.humidity ?? json.hum ?? null,
-      pressure: json.pressure ?? null,
-      uvIndex: json.uvIndex ?? json.uv ?? null,
-      indoorTemp: json.indoorTemp ?? null,
-      indoorHumidity: json.indoorHumidity ?? json.indoorHum ?? null,
-      lastUpdate: json.ts ?? null,
-      userId: json.userId ?? null,
-      stationId: json.stationId ?? null,
-    };
+const mapJsonToDashboardData = (json) => {
+  return {
+    outdoorTemp:
+      json.outdoorTemperatureRead != null
+        ? json.outdoorTemperatureRead / 10
+        : null,
+
+    humidity: json.humidityRead ?? null,
+
+    pressure: json.pressureRead ?? null,
+
+    uvIndex:
+      json.uvIndexRead != null ? json.uvIndexRead / 10 : null,
+
+    indoorTemp:
+      json.indoorTemperatureRead != null
+        ? json.indoorTemperatureRead
+        : null,
+
+    lastUpdate: json.ts ?? null,
+    userId: json.userId ?? null,
+    stationId: json.stationId ?? null,
   };
+};
   // Przypięcie IoT policy do usera (idempotentne)
   const ensureIoTPolicyAttached = async () => {
     try {

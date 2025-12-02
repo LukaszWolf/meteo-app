@@ -23,7 +23,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(180deg, #95d7df 0%, #5e74a1 50%, #95d7df 100%);
+  background: linear-gradient(180deg, rgb(149, 215, 223) 0%, rgb(94, 116, 161) 50%, rgb(149, 215, 223) 100%);
 }
 
 @media (prefers-color-scheme: light) {

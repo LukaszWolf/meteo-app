@@ -1,17 +1,7 @@
-// helper do klas UV
-const getUvLevel = (uv) => {
-  if (uv == null) return "unknown";
-  if (uv < 3) return "low";
-  if (uv < 6) return "medium";
-  if (uv < 8) return "high";
-  return "veryhigh";
-};
 export default function WeatherDashboard({ data }) {
 
-
-      const {
+  const {
     indoorTemp,
-    indoorHumidity,
     outdoorTemp,
     pressure,
     humidity,
@@ -24,8 +14,10 @@ export default function WeatherDashboard({ data }) {
   if (humidity > 80 && (uvIndex ?? 0) < 1) {
     outdoorClasses.push("outdoor-rain");
   }
- return (
+
+  return (
     <section className="dash-main-grid">
+      
       {/* Na dworze */}
       <div className={outdoorClasses.join(" ")}>
         <div className="dash-section-title">NA ZEWNĄTRZ</div>
@@ -57,15 +49,10 @@ export default function WeatherDashboard({ data }) {
             <div className="dash-temp-main">
               {indoorTemp != null ? `${indoorTemp.toFixed(1)} °C` : "—"}
             </div>
-            {/* <div className="dash-sub">
-              Wilgotność:{" "}
-              {indoorHumidity != null
-                ? `${indoorHumidity.toFixed(0)} %`
-                : "—"}
-            </div> */}
           </div>
         </div>
       </div>
+
     </section>
   );
 }
