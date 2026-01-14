@@ -11,6 +11,7 @@ import "./Footer.css";
 import "./WeatherDashboard.css";
 
 import "./CitySearch.css";
+import "./StationClaimPanel.css";
 import NavBar from "./components/NavBar";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
