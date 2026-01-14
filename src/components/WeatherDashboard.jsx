@@ -56,12 +56,7 @@ export default function WeatherDashboard({ data }) {
             <span className="dash-unit">C</span>
           </div>
           
-          <div className="dash-details-grid">
-            <div className="dash-detail-item">
-              <span className="dash-detail-label">Komfort</span>
-              <span className="dash-detail-value">Optymalny</span>
-            </div>
-          </div>
+
         </div>
       </div>
     </section>
