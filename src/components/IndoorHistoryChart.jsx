@@ -43,31 +43,36 @@ export default function IndoorHistoryChart({ history }) {
   const range = maxT - minT || 1;
 
   const pointSpacing = 70; 
-  const height = 220;
-  const padding = 50;
+  const height = 240; 
+  const paddingSide = 50;
+  const paddingTopBottom = 60;
   const chartWidth = Math.max(points.length * pointSpacing, 800); 
-  const width = chartWidth + padding * 2;
-  const chartHeight = height - padding * 2;
+  const width = chartWidth + paddingSide * 2;
+  const chartHeight = height - paddingTopBottom * 2;
 
-  const getX = (i) => padding + (i * (chartWidth / (points.length - 1)));
-  const getY = (t) => height - padding - ((t - minT) / range) * chartHeight;
+  const getX = (i) => paddingSide + (i * (chartWidth / (points.length - 1)));
+  const getY = (t) => height - paddingTopBottom - ((t - minT) / range) * chartHeight;
 
   const pathData = points.reduce((acc, p, i) => 
     `${acc} ${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(p.temp)}`, "");
-  const areaData = `${pathData} L ${getX(points.length - 1)} ${height - padding} L ${padding} ${height - padding} Z`;
+  const areaData = `${pathData} L ${getX(points.length - 1)} ${height - paddingTopBottom} L ${paddingSide} ${height - paddingTopBottom} Z`;
 
   return (
-    <div style={{ marginTop: "20px" }}>
-      <h3 className="city-search-title" style={{ marginBottom: 15, fontSize: "1rem" }}>W domu</h3>
+    <div style={{ marginTop: "10px" }}>
+      <h3 style={{ fontSize: "14px", fontWeight: "600", opacity: 0.8, marginBottom: "12px", color: "#fff" }}>
+        W domu
+      </h3>
       
       <div 
         ref={scrollRef}
         style={{ 
           width: "100%", 
           overflowX: "auto", 
+          cursor: "grab",
           WebkitOverflowScrolling: "touch",
           scrollbarWidth: "thin",
-          scrollbarColor: "rgba(52, 211, 153, 0.3) transparent"
+          scrollbarColor: "rgba(52, 211, 153, 0.3) transparent",
+          paddingBottom: "10px"
         }}
       >
         <svg viewBox={`0 0 ${width} ${height}`} style={{ width: `${width}px`, height: `${height}px`, display: "block" }}>
@@ -81,17 +86,20 @@ export default function IndoorHistoryChart({ history }) {
           <path d={pathData} fill="none" stroke="#34d399" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
 
           {points.map((p, i) => {
-            const showDate = i === 0 || (new Date(p.ts).getDate() !== new Date(points[i - 1].ts).getDate());
+            const dateObj = new Date(p.ts);
+            const prevDateObj = i > 0 ? new Date(points[i - 1].ts) : null;
+            const showDate = i === 0 || (dateObj.getDate() !== prevDateObj?.getDate());
+
             return (
               <g key={i}>
                 {showDate && i !== 0 && (
-                  <line x1={getX(i)} y1={padding} x2={getX(i)} y2={height - padding} stroke="rgba(255,255,255,0.05)" strokeDasharray="4" />
+                  <line x1={getX(i)} y1={paddingTopBottom} x2={getX(i)} y2={height - paddingTopBottom} stroke="rgba(255,255,255,0.05)" strokeDasharray="4" />
                 )}
                 <circle cx={getX(i)} cy={getY(p.temp)} r="4" fill="#34d399" />
-                <text x={getX(i)} y={getY(p.temp) - 12} fill="#fff" fontSize="12" textAnchor="middle" fontWeight="600">{p.temp.toFixed(1)}°</text>
-                <text x={getX(i)} y={height - 24} fill="rgba(255,255,255,0.3)" fontSize="11" textAnchor="middle">{formatTimeHHMM(p.ts)}</text>
+                <text x={getX(i)} y={getY(p.temp) - 15} fill="#fff" fontSize="13" textAnchor="middle" fontWeight="600">{p.temp.toFixed(1)}°</text>
+                <text x={getX(i)} y={height - 35} fill="rgba(255,255,255,0.3)" fontSize="11" textAnchor="middle">{formatTimeHHMM(p.ts)}</text>
                 {showDate && (
-                  <text x={getX(i)} y={height - 8} fill="#34d399" fontSize="10" textAnchor="middle" fontWeight="bold">{formatDateDDMM(p.ts)}</text>
+                  <text x={getX(i)} y={height - 15} fill="#34d399" fontSize="12" textAnchor="middle" fontWeight="bold">{formatDateDDMM(p.ts)}</text>
                 )}
               </g>
             );
