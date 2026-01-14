@@ -254,11 +254,11 @@ const mapJsonToDashboardData = (json) => {
       return;
     }
     if (!thing || !nonce) {
-      setClaimStatus("Podaj nazwę stacji i kod autoryzacji.");
+      setClaimStatus("Błąd: Wypełnij oba pola.");
       return;
     }
 
-    setClaimStatus("Łączenie z serwerem...");
+    setClaimStatus("Weryfikacja danych..."); // Zmieniony tekst
     await ensureIoTPolicyAttached();
     await sleep(1000);
 
@@ -274,30 +274,27 @@ const mapJsonToDashboardData = (json) => {
     const res = await fetch(CLAIM_API_URL, {
       method: "POST",
       headers,
-      body: JSON.stringify({ 
-        thingName: thing, 
-        identityId, 
-        nonce 
-      }),
+      body: JSON.stringify({ thingName: thing, identityId, nonce }),
     });
 
-    // Parsowanie odpowiedzi, aby wyciągnąć błąd wysłany przez Lambdę
-    const responseData = await res.json().catch(() => ({}));
+    // 1. Odbierz treść odpowiedzi
+    const data = await res.json().catch(() => ({}));
+    console.log("[claim] Serwer odpowiedział:", data);
 
-    if (!res.ok) {
-      // Jeśli serwer zwrócił np. 403 (błędny nonce) lub 404 (brak urządzenia)
-      throw new Error(responseData.error || responseData.message || "Błąd serwera");
+    // 2. SPRAWDZENIE: Czy serwer zgłosił błąd logiczny (np. błędny nonce)?
+    // Lambda zazwyczaj wysyła błąd w polu 'error' lub 'message'
+    if (!res.ok || data.error || data.status === "error") {
+      const errMsg = data.error || data.message || "Błędne dane autoryzacji";
+      throw new Error(errMsg);
     }
 
-    setClaimStatus("Sparowano pomyślnie. Twoje dane pojawią się wkrótce.");
-    
-    // Odśwież listę plików po 5 sekundach, żeby zobaczyć nowe dane
-    setTimeout(() => loadFiles(), 5000);
+    // 3. Dopiero tutaj mamy prawdziwy sukces
+    setClaimStatus("Sparowano pomyślnie.");
+    setTimeout(() => loadFiles(), 3000);
 
   } catch (e) {
-    // Tutaj trafiają wszystkie błędy - teraz napis nie będzie zawsze "pomyślny"
-    setClaimStatus("Błąd parowania: " + e.message);
-    console.error("[claim] Error:", e);
+    // Każdy błąd (również ten z 'throw new Error' powyżej) trafi tutaj
+    setClaimStatus("Błąd: " + e.message); 
   }
 };
 
