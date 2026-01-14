@@ -1,5 +1,5 @@
 import React from "react";
-import "./StationClaimPanel.css";
+import "../StationClaimPanel.css";
 
 export default function StationClaimPanel({ 
   thing, 
