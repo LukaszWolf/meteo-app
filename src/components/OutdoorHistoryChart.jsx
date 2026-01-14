@@ -7,10 +7,10 @@ function getTs(m) {
   return m.ts ?? m.lastUpdate ?? null;
 }
 
+// W OutdoorHistoryChart.jsx
 function getOutdoorTemp(m) {
-  if (typeof m.outdoorTemp === "number") return m.outdoorTemp;
-  if (typeof m.temp === "number") return m.temp;
-  return null;
+  // Po mapowaniu w App.jsx pole będzie się nazywać 'temp' lub 'outdoorTemp'
+  return m.outdoorTemp ?? m.temp ?? null;
 }
 
 function sortByTs(history) {

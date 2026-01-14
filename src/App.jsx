@@ -64,6 +64,7 @@ export default function App() {
 
 const mapJsonToDashboardData = (json) => {
   return {
+    // Temperatura zewnętrzna przesyłana jako int (np. 228 -> 22.8 °C)
     outdoorTemp:
       json.outdoorTemperatureRead != null
         ? json.outdoorTemperatureRead / 10
@@ -73,9 +74,11 @@ const mapJsonToDashboardData = (json) => {
 
     pressure: json.pressureRead ?? null,
 
+    // UV przesyłane jako surowy odczyt lub pomnożone (np. 25 -> 2.5)
     uvIndex:
       json.uvIndexRead != null ? json.uvIndexRead / 10 : null,
 
+    // Temperatura wewnętrzna (zazwyczaj przesyłana jako gotowy float/int)
     indoorTemp:
       json.indoorTemperatureRead != null
         ? json.indoorTemperatureRead
