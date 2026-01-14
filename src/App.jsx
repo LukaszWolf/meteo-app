@@ -6,6 +6,8 @@ import "./NavBar.css";
 import "./App.css";
 import "./Landing.css";
 import "./Footer.css";
+
+
 import "./WeatherDashboard.css";
 
 import "./CitySearch.css";
@@ -13,6 +15,7 @@ import NavBar from "./components/NavBar";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
 import WeatherDashboard from "./components/WeatherDashboard";
+//import WeatherApiDashboard from "./components/WeatherApiDashboard";
 import CitySearch from "./components/CitySearch";
 import HistoryPanel from "./components/HistoryPanel";
 
@@ -339,7 +342,7 @@ const mapJsonToDashboardData = (json) => {
           
             <section id="forecast" className="page-section">
           <CitySearch />
-          <WeatherApiDashboard />
+         // ////
             </section>
                     <section id="history" className="page-section">
           <HistoryPanel history={history} />
