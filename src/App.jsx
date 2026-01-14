@@ -15,6 +15,7 @@ import NavBar from "./components/NavBar";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
 import WeatherDashboard from "./components/WeatherDashboard";
+import StationClaimPanel from "./components/StationClaimPanel";
 //import WeatherApiDashboard from "./components/WeatherApiDashboard";
 import CitySearch from "./components/CitySearch";
 import HistoryPanel from "./components/HistoryPanel";
@@ -247,65 +248,51 @@ const mapJsonToDashboardData = (json) => {
     }
   };
 
-  // ===== CLAIM (ESP → request; app → reply przez Lambda) =====
-  const handleClaim = async () => {
-    try {
-      if (!user) {
-        setClaimStatus("Zaloguj się najpierw.");
-        return;
-      }
-      if (!thing) {
-        setClaimStatus("Podaj thingName (np. station-001).");
-        return;
-      }
-      if (!nonce) {
-        setClaimStatus("Wpisz kod (nonce) z konsoli ESP.");
-        return;
-      }
-
-      // 1) Upewnij się, że mamy uprawnienia IoT i daj chwilę na propagację
-      setClaimStatus("🔐 Przygotowuję uprawnienia IoT...");
-      await ensureIoTPolicyAttached();
-      await sleep(1500);
-
-      const creds = await Auth.currentCredentials();
-      const identityId = creds.identityId;
-
-      let headers = { "Content-Type": "application/json" };
-      try {
-        const session = await Auth.currentSession();
-        headers.Authorization = session.getIdToken().getJwtToken();
-        console.log("[claim] Added Authorization header");
-      } catch {}
-
-      console.log("[claim] POST", CLAIM_API_URL, {
-        thingName: thing,
-        identityId,
-        nonce,
-      });
-
-      const res = await fetch(CLAIM_API_URL, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ thingName: thing, identityId, nonce }),
-      });
-      const bodyText = await res.text().catch(() => "");
-      console.log("[claim] reply status:", res.status, "body:", bodyText);
-
-      if (!res.ok) {
-        throw new Error(`API error ${res.status}: ${bodyText}`);
-      }
-
-      setClaimStatus(
-        `✅ Sparowano! Urządzenie zacznie wysyłać do users/${identityId}/stations/${thing}/...`
-      );
-
-      setTimeout(() => loadFiles(), 30000);
-    } catch (e) {
-      setClaimStatus("❌ Błąd: " + String(e));
-      console.error("[claim] outer error:", e);
+const handleClaim = async () => {
+  try {
+    if (!user) {
+      setClaimStatus("Zaloguj się najpierw.");
+      return;
     }
-  };
+    if (!thing) {
+      setClaimStatus("Podaj nazwę stacji.");
+      return;
+    }
+    if (!nonce) {
+      setClaimStatus("Wpisz kod autoryzacji z urządzenia.");
+      return;
+    }
+
+    setClaimStatus("Przygotowuję uprawnienia...");
+    await ensureIoTPolicyAttached();
+    await sleep(1500);
+
+    const creds = await Auth.currentCredentials();
+    const identityId = creds.identityId;
+
+    let headers = { "Content-Type": "application/json" };
+    try {
+      const session = await Auth.currentSession();
+      headers.Authorization = session.getIdToken().getJwtToken();
+    } catch {}
+
+    const res = await fetch(CLAIM_API_URL, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ thingName: thing, identityId, nonce }),
+    });
+
+    if (!res.ok) {
+      const bodyText = await res.text().catch(() => "");
+      throw new Error(`Błąd API: ${bodyText}`);
+    }
+
+    setClaimStatus("Sparowano pomyślnie. Urządzenie wkrótce zacznie wysyłać dane.");
+    setTimeout(() => loadFiles(), 5000);
+  } catch (e) {
+    setClaimStatus("Wystąpił błąd podczas parowania: " + String(e.message));
+  }
+};
 
   // ===== Hub (nasłuch logowania/wylogowania) =====
   useEffect(() => {
@@ -347,24 +334,18 @@ const mapJsonToDashboardData = (json) => {
                     <section id="history" className="page-section">
           <HistoryPanel history={history} />
         </section>
-          <Footer/>
 
-          <h2>🔗 Połącz nową stację</h2>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <input
-              placeholder="thingName (np. station-001)"
-              value={thing}
-              onChange={(e) => setThing(e.target.value)}
-            />
-            <input
-              placeholder="kod z ESP (nonce)"
-              value={nonce}
-              onChange={(e) => setNonce(e.target.value)}
-            />
-            <button onClick={handleClaim}>Połącz</button>
-          </div>
-          <p style={{ whiteSpace: "pre-wrap" }}>{claimStatus}</p>
 
+          {/* Zastąp stary formularz tym komponentem */}
+          <StationClaimPanel 
+            thing={thing}
+            setThing={setThing}
+            nonce={nonce}
+            setNonce={setNonce}
+            handleClaim={handleClaim}
+            claimStatus={claimStatus}
+              />
+                      <Footer/>
           
 
           
