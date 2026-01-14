@@ -1,204 +1,75 @@
-// src/components/IndoorHistoryChart.jsx
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
-// ---- helpery do odczytu pól z obiektu ----
-function getTs(m) {
-  // w historii masz lastUpdate, ale na wszelki wypadek obsłużmy też ts
-  return m.ts ?? m.lastUpdate ?? null;
-}
+function getTs(m) { return m.ts ?? m.lastUpdate ?? null; }
+function getIndoorTemp(m) { return m.indoorTemp ?? null; }
 
-function getIndoorTemp(m) {
-  if (typeof m.indoorTemp === "number") return m.indoorTemp;
-  return null;
-}
-
-// sortujemy po czasie
 function sortByTs(history) {
-  return [...history].sort((a, b) => {
-    const da = getTs(a) ?? 0;
-    const db = getTs(b) ?? 0;
-    return da - db;
-  });
+  return [...history].sort((a, b) => (getTs(a) ?? 0) - (getTs(b) ?? 0));
 }
 
-// formatowanie godziny do "HH:MM"
 function formatTimeHHMM(ts) {
   if (ts == null) return "";
   const d = new Date(ts);
-  if (Number.isNaN(d.getTime())) return "";
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${hh}:${mm}`;
-}
-
-// ile kafelków na stronę – zależnie od szerokości okna
-function getTilesPerPage() {
-  if (typeof window === "undefined") return 6;
-  const w = window.innerWidth;
-  if (w < 480) return 6;    // bardzo mały telefon
-  if (w < 768) return 8;    // telefon
-  if (w < 1024) return 10;  // tablet / mały laptop
-  return 12;                // większe ekrany
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
 export default function IndoorHistoryChart({ history }) {
-  const ordered = sortByTs(history || []);
-  const last24 = ordered.slice(-24);
-
-  const indoorPoints = last24
-    .map((m) => ({
+  const ordered = useMemo(() => sortByTs(history || []), [history]);
+  const points = useMemo(() => {
+    return ordered.slice(-12).map(m => ({
       ts: getTs(m),
-      temp: getIndoorTemp(m),
-    }))
-    .filter((p) => p.ts != null && p.temp != null);
+      temp: getIndoorTemp(m)
+    })).filter(p => p.ts != null && p.temp != null);
+  }, [ordered]);
 
-  if (indoorPoints.length === 0) {
-    return (
-      <div>
-        <h2 className="city-search-title" style={{ marginBottom: 6 }}>
-          W domu
-        </h2>
-        <p>Brak pomiarów temperatury w domu.</p>
-      </div>
-    );
-  }
+  if (points.length < 2) return null;
 
-  // ---- normalizacja wysokości słupków (skalowanie) ----
-  let minT = Infinity;
-  let maxT = -Infinity;
-  indoorPoints.forEach((p) => {
-    if (p.temp < minT) minT = p.temp;
-    if (p.temp > maxT) maxT = p.temp;
-  });
-
-  if (!Number.isFinite(minT) || !Number.isFinite(maxT)) {
-    minT = 0;
-    maxT = 1;
-  }
-
-  // jak zakres jest malutki, dodaj "bufor", żeby słupki były widoczne
-  if (maxT - minT < 0.1) {
-    minT -= 0.05;
-    maxT += 0.05;
-  }
+  const minT = Math.min(...points.map(p => p.temp)) - 1;
+  const maxT = Math.max(...points.map(p => p.temp)) + 1;
   const range = maxT - minT || 1;
 
-  // ---- logika paska jak w prognozie godzinowej/dziennej ----
-  const [tilesPerPage, setTilesPerPage] = useState(getTilesPerPage);
-  const [startIndex, setStartIndex] = useState(0);
+  const width = 1000;
+  const height = 180; // Nieco niższy dla balansu
+  const padding = 40;
+  const chartWidth = width - padding * 2;
+  const chartHeight = height - padding * 2;
 
-  useEffect(() => {
-    const onResize = () => {
-      const next = getTilesPerPage();
-      setTilesPerPage(next);
-      setStartIndex(0);
-    };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
+  const getX = (i) => padding + (i * (chartWidth / (points.length - 1)));
+  const getY = (t) => height - padding - ((t - minT) / range) * chartHeight;
 
-  const maxStart = Math.max(0, indoorPoints.length - tilesPerPage);
-  const safeStart = Math.min(startIndex, maxStart);
+  const pathData = points.reduce((acc, p, i) => 
+    `${acc} ${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(p.temp)}`, "");
 
-  const canGoPrev = safeStart > 0;
-  const canGoNext = safeStart < maxStart;
-
-  const visible = indoorPoints.slice(safeStart, safeStart + tilesPerPage);
-
-  const handlePrev = () => {
-    if (!canGoPrev) return;
-    const next = Math.max(0, safeStart - tilesPerPage);
-    setStartIndex(next);
-  };
-
-  const handleNext = () => {
-    if (!canGoNext) return;
-    const next = Math.min(maxStart, safeStart + tilesPerPage);
-    setStartIndex(next);
-  };
+  const areaData = `${pathData} L ${getX(points.length - 1)} ${height - padding} L ${padding} ${height - padding} Z`;
 
   return (
     <div>
-      <h2 className="city-search-title" style={{ marginBottom: 6 }}>
-        W domu
-      </h2>
+      <h2 className="city-search-title" style={{ marginBottom: 15 }}>W domu</h2>
+      
+      <div style={{ width: "100%", overflow: "hidden" }}>
+        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", height: "auto", display: "block" }}>
+          <defs>
+            <linearGradient id="gradIndoor" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="rgba(52, 211, 153, 0.5)" />
+              <stop offset="100%" stopColor="rgba(52, 211, 153, 0)" />
+            </linearGradient>
+          </defs>
 
-      <div
-        className="weather-strip"
-        style={{ marginTop: 4 }}
-      >
-        <button
-          onClick={handlePrev}
-          disabled={!canGoPrev}
-          className="weather-strip-btn"
-        >
-          ◀
-        </button>
+          <path d={areaData} fill="url(#gradIndoor)" />
+          <path d={pathData} fill="none" stroke="#34d399" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
 
-        <div className="weather-tiles-row">
-          {visible.map((p, idx) => {
-            const h = ((p.temp - minT) / range) * 100;
-
-            return (
-              <div
-                key={`${p.ts}-${idx}`}
-                className="hourly-tile"
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  padding: "8px 10px",
-                  background: "rgba(0, 0, 0, 0.16)",
-                  borderRadius: 14,
-                }}
-              >
-                {/* słupek */}
-                <div
-                  style={{
-                    flex: "1 1 auto",
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "flex-end",
-                    marginBottom: 6,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "100%",
-                      height: `${h}%`,
-                      minHeight: "6%",
-                      borderRadius: "6px 6px 0 0",
-                      background:
-                        "linear-gradient(to top, rgba(79,140,255,0.9), rgba(170,210,255,0.85))",
-                    }}
-                    title={`${p.temp.toFixed(1)} °C`}
-                  />
-                </div>
-
-                {/* podpis: godzina + temperatura */}
-                <div
-                  style={{
-                    fontSize: 12,
-                    textAlign: "center",
-                    lineHeight: 1.3,
-                  }}
-                >
-                  <div>{formatTimeHHMM(p.ts)}</div>
-                  <div>{p.temp.toFixed(1)} °C</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <button
-          onClick={handleNext}
-          disabled={!canGoNext}
-          className="weather-strip-btn"
-        >
-          ▶
-        </button>
+          {points.map((p, i) => (
+            <g key={i}>
+              <circle cx={getX(i)} cy={getY(p.temp)} r="5" fill="#34d399" />
+              <text x={getX(i)} y={getY(p.temp) - 15} fill="#fff" fontSize="14" textAnchor="middle" fontWeight="600">
+                {p.temp.toFixed(1)}°
+              </text>
+              <text x={getX(i)} y={height - 5} fill="rgba(255,255,255,0.4)" fontSize="12" textAnchor="middle">
+                {formatTimeHHMM(p.ts)}
+              </text>
+            </g>
+          ))}
+        </svg>
       </div>
     </div>
   );
