@@ -403,7 +403,8 @@ const mapJsonToDashboardData = (json) => {
         </section>
 
 
-          {/* Zastąp stary formularz tym komponentem */}
+            {/* Zastąp stary formularz tym komponentem */}
+          <section id="pairing" className="page-section">
           <StationClaimPanel 
             thing={thing}
             setThing={setThing}
@@ -412,6 +413,7 @@ const mapJsonToDashboardData = (json) => {
             handleClaim={handleClaim}
             claimStatus={claimStatus}
               />
+        </section>
                       <Footer/>
           
 

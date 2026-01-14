@@ -8,60 +8,62 @@ const getUvLevel = (uv) => {
 };
 
 export default function WeatherDashboard({ data }) {
-
-  const {
-    indoorTemp,
-    outdoorTemp,
-    pressure,
-    humidity,
-    uvIndex,
-  } = data || {};
-
+  const { indoorTemp, outdoorTemp, pressure, humidity, uvIndex } = data || {};
   const uvLevel = getUvLevel(uvIndex);
-
-  const outdoorClasses = ["dash-card", "dash-outdoor", `uv-${uvLevel}`];
-  if (humidity > 80 && (uvIndex ?? 0) < 1) {
-    outdoorClasses.push("outdoor-rain");
-  }
 
   return (
     <section className="dash-main-grid">
-      
-      {/* Na dworze */}
-      <div className={outdoorClasses.join(" ")}>
-        <div className="dash-section-title">NA ZEWNĄTRZ</div>
-        <div className="dash-row">
-          <div className="dash-icon dash-icon-weather" />
-          <div className="dash-values">
-            <div className="dash-temp-main">
-              {outdoorTemp != null ? `${outdoorTemp.toFixed(1)} °C` : "—"}
+      {/* KARTA: NA ZEWNĄTRZ */}
+      <div className={`dash-card dash-outdoor uv-${uvLevel}`}>
+        <div className="dash-section-header">
+          <span className="dash-status-dot"></span>
+          <div className="dash-section-title">NA ZEWNĄTRZ</div>
+        </div>
+        
+        <div className="dash-main-content">
+          <div className="dash-temp-display">
+            {outdoorTemp != null ? `${outdoorTemp.toFixed(1)}°` : "—"}
+            <span className="dash-unit">C</span>
+          </div>
+          
+          <div className="dash-details-grid">
+            <div className="dash-detail-item">
+              <span className="dash-detail-label">Ciśnienie</span>
+              <span className="dash-detail-value">{pressure != null ? `${pressure.toFixed(0)} hPa` : "—"}</span>
             </div>
-            <div className="dash-sub">
-              Ciśnienie:{" "}
-              {pressure != null ? `${pressure.toFixed(0)} hPa` : "—"} •{" "}
-              Wilgotność:{" "}
-              {humidity != null ? `${humidity.toFixed(0)} %` : "—"}
+            <div className="dash-detail-item">
+              <span className="dash-detail-label">Wilgotność</span>
+              <span className="dash-detail-value">{humidity != null ? `${humidity.toFixed(0)}%` : "—"}</span>
             </div>
-            <div className="dash-sub">
-              UV: {uvIndex != null ? uvIndex.toFixed(1) : "—"}
+            <div className="dash-detail-item">
+              <span className="dash-detail-label">Indeks UV</span>
+              <span className="dash-detail-value">{uvIndex != null ? uvIndex.toFixed(1) : "—"}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* W domu */}
+      {/* KARTA: W DOMU */}
       <div className="dash-card dash-indoor">
-        <div className="dash-section-title">W DOMU</div>
-        <div className="dash-row">
-          <div className="dash-icon dash-icon-house" />
-          <div className="dash-values">
-            <div className="dash-temp-main">
-              {indoorTemp != null ? `${indoorTemp.toFixed(1)} °C` : "—"}
+        <div className="dash-section-header">
+          <span className="dash-status-dot"></span>
+          <div className="dash-section-title">W DOMU</div>
+        </div>
+        
+        <div className="dash-main-content">
+          <div className="dash-temp-display">
+            {indoorTemp != null ? `${indoorTemp.toFixed(1)}°` : "—"}
+            <span className="dash-unit">C</span>
+          </div>
+          
+          <div className="dash-details-grid">
+            <div className="dash-detail-item">
+              <span className="dash-detail-label">Komfort</span>
+              <span className="dash-detail-value">Optymalny</span>
             </div>
           </div>
         </div>
       </div>
-
     </section>
   );
 }

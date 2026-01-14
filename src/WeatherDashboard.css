@@ -1,14 +1,12 @@
-
 .dash-main-grid {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 32px 16px 64px;
+  padding: 32px 16px 40px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr)); 
-  gap: 16px;
+  gap: 20px;
   color: inherit;
 }
-
 
 @media (max-width: 900px) {
   .dash-main-grid {
@@ -17,143 +15,124 @@
 }
 
 .dash-card {
+  /* Twoja baza kolorystyczna z zachowaniem przezroczystości */
   background: rgba(11, 18, 32, 0.82);
   border: 1px solid rgba(125, 140, 160, 0.28);
-  border-radius: 16px;
-  padding: 16px 18px;
+  border-radius: 20px;
+  padding: 24px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
   color: #f9fafb;
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(12px);
 }
 
-.dash-card::before {
+/* Akcenty kolorystyczne na krawędzi (zamiast ikon) */
+.dash-outdoor::before {
   content: "";
   position: absolute;
-  inset: -40%;
-  background: radial-gradient(
-    circle at top left,
-    rgba(148, 197, 255, 0.22),
-    transparent 65%
-  );
-  opacity: 0.7;
-  pointer-events: none;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  background: linear-gradient(to bottom, #38bdf8, #2563eb);
 }
 
-.dash-outdoor {
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(56, 189, 248, 0.28),
-      rgba(37, 99, 235, 0.16)
-    ),
-    rgba(11, 18, 32, 0.94);
+.dash-indoor::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  background: linear-gradient(to bottom, #34d399, #3b82f6);
 }
 
-.dash-indoor {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(52, 211, 153, 0.3),
-      rgba(59, 130, 246, 0.12)
-    ),
-    rgba(11, 18, 32, 0.94);
+/* Nagłówek sekcji z kropką statusu */
+.dash-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-@media (max-width: 900px) {
-  .dash-outdoor {
-    grid-column: span 1;
-  }
+.dash-status-dot {
+  width: 8px;
+  height: 8px;
+  background: #34d399;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.8);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
 }
 
 .dash-section-title {
-  font-size: 13px;
+  font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  opacity: 0.78;
-  margin-bottom: 10px;
+  letter-spacing: 0.2em;
+  opacity: 0.6;
+  margin: 0;
 }
 
-.dash-row {
+/* Główna temperatura */
+.dash-temp-display {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  margin-bottom: 24px;
   display: flex;
-  align-items: center;
-  gap: 14px;
+  align-items: flex-start;
+  color: #fff;
 }
 
-.dash-icon {
-  width: 72px;
-  height: 72px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.75);
+.dash-unit {
+  font-size: 20px;
+  margin-top: 10px;
+  margin-left: 4px;
+  opacity: 0.5;
+  font-weight: 400;
+}
+
+/* Siatka detali (Ciśnienie, Wilgotność, UV) */
+.dash-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 20px;
+}
+
+.dash-detail-item {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.95);
-  flex-shrink: 0;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 70%;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.dash-icon-house {
-  background-image: url("/meteo-app/img/weather/house.png");
+.dash-detail-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.5;
 }
 
-.dash-icon-weather {
-  background-image: url("/meteo-app/img/weather/cloud.png");
+.dash-detail-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f3f4f6;
 }
 
-
-.dash-outdoor.uv-low .dash-icon-weather {
-  background-image: url("/meteo-app/img/weather/partly.png");   
-}
-
-.dash-outdoor.uv-medium .dash-icon-weather {
-  background-image: url("/meteo-app/img/weather/sun.png");    
-}
-
-.dash-outdoor.uv-high .dash-icon-weather,
-.dash-outdoor.uv-veryhigh .dash-icon-weather {
-  background-image: url("/meteo-app/img/weather/sun.png");
-  box-shadow: 0 0 25px rgba(250, 204, 21, 0.85);              
-}
-
-
-.dash-outdoor.outdoor-rain .dash-icon-weather {
-  background-image: url("/meteo-app/img/weather/rain.png");
-}
-
-
-
-.dash-values {
-  flex: 1;
-}
-
-.dash-temp-main {
-  font-size: 30px;
-  font-weight: 700;
-  margin: 0 0 4px;
-}
-
-.dash-sub {
-  font-size: 13px;
-  opacity: 0.9;
-}
-
-
+/* Responsywność dla mniejszych ekranów */
 @media (max-width: 600px) {
   .dash-card {
-    padding: 14px 14px 16px;
+    padding: 20px;
   }
 
-  .dash-icon {
-    width: 64px;
-    height: 64px;
+  .dash-temp-display {
+    font-size: 42px;
   }
 
-  .dash-temp-main {
-    font-size: 26px;
+  .dash-details-grid {
+    grid-template-columns: 1fr 1fr; /* dwa rzędy na telefonie */
   }
 }

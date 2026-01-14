@@ -5,11 +5,13 @@ export default function NavBar({ LogoutLoginText, onAuthClick }) {
         <a className="brand" href="/">Meteo<span>•</span>App</a>
         <nav aria-label="Główne">
           <ul className="menu">
-            <li><a href="#live-data">Stacja</a></li>
+            <li><a href="#live-data">Dane na żywo</a></li>
             <li><span>•</span></li>
             <li><a href="#forecast">Prognoza pogody</a></li>
             <li><span>•</span></li>
             <li><a href="#history">Historia</a></li>
+            <li><span>•</span></li>
+            <li><a href="#pairing">Parowanie</a></li>
             <li>
               <button className="cta" onClick={onAuthClick}>
                 {LogoutLoginText}
