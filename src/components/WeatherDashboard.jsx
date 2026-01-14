@@ -1,3 +1,12 @@
+const getUvLevel = (uv) => {
+  if (uv == null) return "low";
+  if (uv <= 2) return "low";
+  if (uv <= 5) return "moderate";
+  if (uv <= 7) return "high";
+  if (uv <= 10) return "very-high";
+  return "extreme";
+};
+
 export default function WeatherDashboard({ data }) {
 
   const {
