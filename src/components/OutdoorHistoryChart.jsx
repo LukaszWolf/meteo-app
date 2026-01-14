@@ -61,10 +61,10 @@ export default function OutdoorHistoryChart({ history }) {
     <div style={{ marginBottom: "40px" }}>
       {/* Nagłówek identyczny jak w prognozie */}
       <h2 className="city-search-title" style={{ marginBottom: "4px" }}>
-        DANE HISTORYCZNE
+        Historia pomiarów
       </h2>
       <p className="city-search-subtitle" style={{ marginBottom: "20px" }}>
-        Ostatnie odczyty temperatury z Twojej stacji
+        Wykres odczytów temperatury
       </p>
 
       <h3 style={{ fontSize: "14px", fontWeight: "600", opacity: 0.8, marginBottom: "12px", color: "#fff" }}>
