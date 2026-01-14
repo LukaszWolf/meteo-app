@@ -342,16 +342,12 @@ const mapJsonToDashboardData = (json) => {
           
             <section id="forecast" className="page-section">
           <CitySearch />
-         // ////
+         
             </section>
                     <section id="history" className="page-section">
           <HistoryPanel history={history} />
         </section>
           <Footer/>
-            <p>
-            Zalogowano jako: <b>{user.attributes?.email || user.username}</b>
-          </p>
-          <button onClick={handleSignOut}>🚪 Wyloguj</button>
 
           <h2>🔗 Połącz nową stację</h2>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -369,35 +365,9 @@ const mapJsonToDashboardData = (json) => {
           </div>
           <p style={{ whiteSpace: "pre-wrap" }}>{claimStatus}</p>
 
-          <h2>📁 Twoje dane</h2>
-          {!files || files.length === 0 ? (
-            <p>Brak plików w S3</p>
-          ) : (
-            <ul>
-              {files.map((f) => (
-                <li key={f.key}>
-                  {f.key}{" "}
-                  <button onClick={() => fetchData(f.key)}>📥 Pobierz</button>
-                </li>
-              ))}
-            </ul>
-          )}
+          
 
-          {error && <pre style={{ color: "red" }}>{error}</pre>}
-
-          {fileContent && (
-            <pre
-              style={{
-                background: "#f6f6f6",
-                border: "1px solid #ccc",
-                padding: 12,
-                marginTop: 16,
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {fileContent}
-            </pre>
-          )}
+          
         </>
       )}
     </div>
