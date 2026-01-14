@@ -258,10 +258,29 @@ const mapJsonToDashboardData = (json) => {
       return;
     }
 
-    setClaimStatus("Weryfikacja danych..."); // Zmieniony tekst
-    await ensureIoTPolicyAttached();
-    await sleep(1000);
+    setClaimStatus("Wysyłam kod do stacji...");
 
+    // 1. USTALAMY TEMAT, NA KTÓRYM STACJA POWINNA ZARAZ COŚ WYŚLAĆ
+    // Zakładamy, że po sparowaniu ESP32 publikuje dane na ten temat:
+    const dataTopic = `devices/${thing}/data`; 
+    let isConfirmed = false;
+
+    // 2. SUBSKRYPCJA - Czekamy na pierwszy znak życia od stacji
+    const subscription = PubSub.subscribe(dataTopic).subscribe({
+      next: (msg) => {
+        console.log("Odebrano pierwsze dane po sparowaniu:", msg);
+        isConfirmed = true;
+        setClaimStatus("Sparowano pomyślnie!");
+        subscription.unsubscribe();
+        
+        // Odświeżamy listę plików, bo stacja pewnie właśnie wysłała pierwszy plik do S3
+        setTimeout(() => loadFiles(), 2000);
+      },
+      error: (error) => console.error("Błąd subskrypcji:", error),
+      close: () => console.log("Subskrypcja zakończona"),
+    });
+
+    // 3. WYSYŁKA KODU PRZEZ LAMBDĘ (Twoja obecna Lambda)
     const creds = await Auth.currentCredentials();
     const identityId = creds.identityId;
 
@@ -269,7 +288,7 @@ const mapJsonToDashboardData = (json) => {
     try {
       const session = await Auth.currentSession();
       headers.Authorization = session.getIdToken().getJwtToken();
-    } catch {}
+    } catch (e) {}
 
     const res = await fetch(CLAIM_API_URL, {
       method: "POST",
@@ -277,24 +296,22 @@ const mapJsonToDashboardData = (json) => {
       body: JSON.stringify({ thingName: thing, identityId, nonce }),
     });
 
-    // 1. Odbierz treść odpowiedzi
-    const data = await res.json().catch(() => ({}));
-    console.log("[claim] Serwer odpowiedział:", data);
-
-    // 2. SPRAWDZENIE: Czy serwer zgłosił błąd logiczny (np. błędny nonce)?
-    // Lambda zazwyczaj wysyła błąd w polu 'error' lub 'message'
-    if (!res.ok || data.error || data.status === "error") {
-      const errMsg = data.error || data.message || "Błędne dane autoryzacji";
-      throw new Error(errMsg);
+    if (!res.ok) {
+      subscription.unsubscribe();
+      setClaimStatus("Błąd serwera: Nie udało się wysłać zapytania.");
+      return;
     }
 
-    // 3. Dopiero tutaj mamy prawdziwy sukces
-    setClaimStatus("Sparowano pomyślnie.");
-    setTimeout(() => loadFiles(), 3000);
+    // 4. TIMEOUT - Jeśli w ciągu 15 sekund stacja nic nie wyśle, kod był zły
+    setTimeout(() => {
+      if (!isConfirmed) {
+        subscription.unsubscribe();
+        setClaimStatus("Błąd: Stacja nie odpowiedziała. Sprawdź kod na ekranie.");
+      }
+    }, 15000);
 
   } catch (e) {
-    // Każdy błąd (również ten z 'throw new Error' powyżej) trafi tutaj
-    setClaimStatus("Błąd: " + e.message); 
+    setClaimStatus("Wystąpił błąd: " + e.message);
   }
 };
 
