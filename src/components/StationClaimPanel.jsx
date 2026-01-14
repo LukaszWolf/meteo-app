@@ -52,11 +52,11 @@ export default function StationClaimPanel({
             
           </div>
 
-          {claimStatus && (
-            <div className="claim-status-box">
-              {claimStatus}
-            </div>
-          )}
+{claimStatus && (
+  <div className={`claim-status-box ${claimStatus.includes("Błąd") ? "error" : claimStatus.includes("pomyślnie") ? "success" : ""}`}>
+    {claimStatus}
+  </div>
+)}
         </div>
       </div>
     </section>

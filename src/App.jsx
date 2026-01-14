@@ -247,25 +247,20 @@ const mapJsonToDashboardData = (json) => {
       setError(String(err));
     }
   };
-
-const handleClaim = async () => {
+  const handleClaim = async () => {
   try {
     if (!user) {
       setClaimStatus("Zaloguj się najpierw.");
       return;
     }
-    if (!thing) {
-      setClaimStatus("Podaj nazwę stacji.");
-      return;
-    }
-    if (!nonce) {
-      setClaimStatus("Wpisz kod autoryzacji z urządzenia.");
+    if (!thing || !nonce) {
+      setClaimStatus("Podaj nazwę stacji i kod autoryzacji.");
       return;
     }
 
-    setClaimStatus("Przygotowuję uprawnienia...");
+    setClaimStatus("Łączenie z serwerem...");
     await ensureIoTPolicyAttached();
-    await sleep(1500);
+    await sleep(1000);
 
     const creds = await Auth.currentCredentials();
     const identityId = creds.identityId;
@@ -279,20 +274,78 @@ const handleClaim = async () => {
     const res = await fetch(CLAIM_API_URL, {
       method: "POST",
       headers,
-      body: JSON.stringify({ thingName: thing, identityId, nonce }),
+      body: JSON.stringify({ 
+        thingName: thing, 
+        identityId, 
+        nonce 
+      }),
     });
 
+    // Parsowanie odpowiedzi, aby wyciągnąć błąd wysłany przez Lambdę
+    const responseData = await res.json().catch(() => ({}));
+
     if (!res.ok) {
-      const bodyText = await res.text().catch(() => "");
-      throw new Error(`Błąd API: ${bodyText}`);
+      // Jeśli serwer zwrócił np. 403 (błędny nonce) lub 404 (brak urządzenia)
+      throw new Error(responseData.error || responseData.message || "Błąd serwera");
     }
 
-    setClaimStatus("Sparowano pomyślnie. Urządzenie wkrótce zacznie wysyłać dane.");
+    setClaimStatus("Sparowano pomyślnie. Twoje dane pojawią się wkrótce.");
+    
+    // Odśwież listę plików po 5 sekundach, żeby zobaczyć nowe dane
     setTimeout(() => loadFiles(), 5000);
+
   } catch (e) {
-    setClaimStatus("Wystąpił błąd podczas parowania: " + String(e.message));
+    // Tutaj trafiają wszystkie błędy - teraz napis nie będzie zawsze "pomyślny"
+    setClaimStatus("Błąd parowania: " + e.message);
+    console.error("[claim] Error:", e);
   }
 };
+
+// const handleClaim = async () => {
+//   try {
+//     if (!user) {
+//       setClaimStatus("Zaloguj się najpierw.");
+//       return;
+//     }
+//     if (!thing) {
+//       setClaimStatus("Podaj nazwę stacji.");
+//       return;
+//     }
+//     if (!nonce) {
+//       setClaimStatus("Wpisz kod autoryzacji z urządzenia.");
+//       return;
+//     }
+
+//     setClaimStatus("Przygotowuję uprawnienia...");
+//     await ensureIoTPolicyAttached();
+//     await sleep(1500);
+
+//     const creds = await Auth.currentCredentials();
+//     const identityId = creds.identityId;
+
+//     let headers = { "Content-Type": "application/json" };
+//     try {
+//       const session = await Auth.currentSession();
+//       headers.Authorization = session.getIdToken().getJwtToken();
+//     } catch {}
+
+//     const res = await fetch(CLAIM_API_URL, {
+//       method: "POST",
+//       headers,
+//       body: JSON.stringify({ thingName: thing, identityId, nonce }),
+//     });
+
+//     if (!res.ok) {
+//       const bodyText = await res.text().catch(() => "");
+//       throw new Error(`Błąd API: ${bodyText}`);
+//     }
+
+//     setClaimStatus("Sparowano pomyślnie. Urządzenie wkrótce zacznie wysyłać dane.");
+//     setTimeout(() => loadFiles(), 5000);
+//   } catch (e) {
+//     setClaimStatus("Wystąpił błąd podczas parowania: " + String(e.message));
+//   }
+// };
 
   // ===== Hub (nasłuch logowania/wylogowania) =====
   useEffect(() => {
