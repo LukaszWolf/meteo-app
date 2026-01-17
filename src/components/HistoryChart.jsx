@@ -19,7 +19,7 @@ function formatDateDDMM(ts) {
   return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function GenericHistoryChart({ 
+export default function HistoryChart({ 
   history, 
   dataKey, 
   color = "#4f8cff", 

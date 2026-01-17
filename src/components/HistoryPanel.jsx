@@ -26,7 +26,7 @@ export default function HistoryPanel({ history }) {
         </p>
 
         {/* Wykres Zewnętrzny */}
-        <GenericHistoryChart 
+        <HistoryChart 
           history={history} 
           dataKey="outdoorTemp" 
           color="#4f8cff" 
@@ -35,7 +35,7 @@ export default function HistoryPanel({ history }) {
         />
 
         {/* Wykres Wewnętrzny */}
-        <GenericHistoryChart 
+        <HistoryChart 
           history={history} 
           dataKey="indoorTemp" 
           color="#34d399" 
