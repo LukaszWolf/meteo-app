@@ -1,4 +1,4 @@
-// src/components/GenericHistoryChart.jsx
+// src/components/HistoryChart.jsx
 import { useMemo, useRef, useEffect } from "react";
 
 function getTs(m) { return m.ts ?? m.lastUpdate ?? null; }

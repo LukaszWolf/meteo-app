@@ -1,5 +1,5 @@
 // src/components/HistoryPanel.jsx
-import GenericHistoryChart from "./GenericHistoryChart";
+import HistoryChart from "./GenericHistoryChart";
 
 export default function HistoryPanel({ history }) {
   console.log("HistoryPanel history:", history);
