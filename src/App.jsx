@@ -6,27 +6,22 @@ import "./NavBar.css";
 import "./App.css";
 import "./Landing.css";
 import "./Footer.css";
-
-
 import "./WeatherDashboard.css";
-
 import "./CitySearch.css";
+
 import NavBar from "./components/NavBar";
 import Landing from "./components/Landing";
 import Footer from "./components/Footer";
 import WeatherDashboard from "./components/WeatherDashboard";
 import StationClaimPanel from "./components/StationClaimPanel";
-//import WeatherApiDashboard from "./components/WeatherApiDashboard";
 import CitySearch from "./components/CitySearch";
 import HistoryPanel from "./components/HistoryPanel";
 
-
-// 1) Amplify (Auth, Storage)
+// 1) Amplify
 Amplify.configure(awsconfig);
 
-// 2) PubSub over WSS (AWS IoT Core) — Twój endpoint WSS z /mqtt
-const AWS_IOT_ENDPOINT =
-  "wss://an7hi8lzvqru3-ats.iot.eu-north-1.amazonaws.com/mqtt";
+// 2) PubSub
+const AWS_IOT_ENDPOINT = "wss://an7hi8lzvqru3-ats.iot.eu-north-1.amazonaws.com/mqtt";
 
 Amplify.addPluggable(
   new AWSIoTProvider({
@@ -36,99 +31,57 @@ Amplify.addPluggable(
 );
 
 // 3) API Gateway
-// - Lambda: claim-reply (publikuje reply na devices/<thing>/claim/reply)
-const CLAIM_API_URL =
-  "https://rp6817rcg4.execute-api.eu-north-1.amazonaws.com/claim/reply";
+const CLAIM_API_URL = "https://rp6817rcg4.execute-api.eu-north-1.amazonaws.com/claim/reply";
+const ATTACH_API_URL = "https://wjngrfdjy3.execute-api.eu-north-1.amazonaws.com/attach";
 
-// - Lambda: attach-iot-policy (przypina IoT policy do IdentityId usera)
-const ATTACH_API_URL =
-  "https://wjngrfdjy3.execute-api.eu-north-1.amazonaws.com/attach";
-
-// Helper do 1–2 s pauzy na propagację uprawnień
+// Helper
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [files, setFiles] = useState([]);
-  const [fileContent, setFileContent] = useState("");
-  const [error, setError] = useState("");
-
+  
   // UI do claim
   const [thing, setThing] = useState("");
-  const [nonce, setNonce] = useState(""); // <-- nowe pole na nonce
+  const [nonce, setNonce] = useState("");
   const [claimStatus, setClaimStatus] = useState("");
-  const claimSubRef = useRef(null);
 
-    //dane do pogody
+  // Dane do pogody
   const [measurement, setMeasurement] = useState(null);
   const [history, setHistory] = useState([]);
 
   // ===== Helpers =====
 
-const mapJsonToDashboardData = (json) => {
-  return {
-    // Temperatura zewnętrzna przesyłana jako int (np. 228 -> 22.8 °C)
-    outdoorTemp:
-      json.outdoorTemperatureRead != null
-        ? json.outdoorTemperatureRead / 10
-        : null,
-
-    humidity: json.humidityRead ?? null,
-
-    pressure: json.pressureRead ?? null,
-
-    // UV przesyłane jako surowy odczyt lub pomnożone (np. 25 -> 2.5)
-    uvIndex:
-      json.uvIndexRead != null ? json.uvIndexRead / 10 : null,
-
-    // Temperatura wewnętrzna (zazwyczaj przesyłana jako gotowy float/int)
-    indoorTemp:
-      json.indoorTemperatureRead != null
-        ? json.indoorTemperatureRead
-        : null,
-
-    lastUpdate: json.ts ?? null,
-    userId: json.userId ?? null,
-    stationId: json.stationId ?? null,
+  const mapJsonToDashboardData = (json) => {
+    return {
+      outdoorTemp: json.outdoorTemperatureRead != null ? json.outdoorTemperatureRead / 10 : null,
+      humidity: json.humidityRead ?? null,
+      pressure: json.pressureRead ?? null,
+      uvIndex: json.uvIndexRead != null ? json.uvIndexRead / 10 : null,
+      indoorTemp: json.indoorTemperatureRead != null ? json.indoorTemperatureRead : null,
+      lastUpdate: json.ts ?? null,
+      userId: json.userId ?? null,
+      stationId: json.stationId ?? null,
+    };
   };
-};
-  // Przypięcie IoT policy do usera (idempotentne)
+
   const ensureIoTPolicyAttached = async () => {
     try {
       const creds = await Auth.currentCredentials();
-      const identityId = creds.identityId; // eu-north-1:...
-      console.log("[attach] currentCredentials:", creds);
-      if (!identityId) {
-        console.warn("[attach] Brak identityId!");
-        return;
-      }
+      const identityId = creds.identityId;
+      if (!identityId) return;
 
       let headers = { "Content-Type": "application/json" };
-      // Jeśli /attach jest chronione Cognito authorizerem — dodaj JWT
       try {
         const session = await Auth.currentSession();
-        const token = session.getIdToken().getJwtToken();
-        headers.Authorization = token;
-        console.log("[attach] Dołączam Authorization (ID token)...");
-      } catch {
-        console.log("[attach] Brak tokenu (authorizer nie jest wymagany)...");
-      }
+        headers.Authorization = session.getIdToken().getJwtToken();
+      } catch {}
 
-      console.log("[attach] POST", ATTACH_API_URL, { identityId });
-      const r = await fetch(ATTACH_API_URL, {
+      await fetch(ATTACH_API_URL, {
         method: "POST",
         headers,
         body: JSON.stringify({ identityId }),
       });
-
-      const text = await r.text().catch(() => "");
-      console.log("[attach] response status:", r.status, "body:", text);
-
-      if (!r.ok) {
-        console.warn("attach policy failed:", text);
-      } else {
-        console.log("attach policy OK for", identityId);
-      }
     } catch (e) {
       console.warn("attach policy error:", e);
     }
@@ -137,12 +90,10 @@ const mapJsonToDashboardData = (json) => {
   const checkUser = async () => {
     try {
       const currentUser = await Auth.currentAuthenticatedUser();
-      console.log("[auth] current user:", currentUser);
       setUser(currentUser);
       await ensureIoTPolicyAttached();
       await loadFiles();
     } catch (e) {
-      console.warn("[auth] no user:", e);
       setUser(null);
     }
   };
@@ -150,7 +101,6 @@ const mapJsonToDashboardData = (json) => {
   const handleSignIn = async () => {
     try {
       await Auth.federatedSignIn();
-      
     } catch (err) {
       console.error("Błąd logowania:", err);
     }
@@ -161,43 +111,44 @@ const mapJsonToDashboardData = (json) => {
       await Auth.signOut();
       setUser(null);
       setFiles([]);
-      setFileContent("");
+      setHistory([]);
+      setMeasurement(null);
     } catch (err) {
       console.error("Błąd wylogowania:", err);
     }
   };
 
+  // ⚠️ ZMODYFIKOWANE ŁADOWANIE PLIKÓW (LIMIT 48)
   const loadFiles = async () => {
-    // try {
-    //   const creds = await Auth.currentCredentials();
-    //   const id = creds.identityId; // eu-north-1:...
-    //   console.log("[s3] IdentityId:", id);
-    //   const { results } = await Storage.list(`users/${id}/stations/`, {
-    //     level: "public",
-    //   });
-    //   console.log("[s3] list results:", results);
-    //   setFiles(results || []);
-    // } catch (err) {
-    //   console.error("Błąd ładowania plików:", err);
-    //   setFiles([]);
-    // }
-    // Tryb produkcyjny
     try {
       const creds = await Auth.currentCredentials();
       const id = creds.identityId;
       console.log("[s3] IdentityId:", id);
 
+      // 1. Pobierz listę wszystkich plików
       const { results } = await Storage.list(`users/${id}/stations/`, {
         level: "public",
       });
       
-      console.log("[s3] list results:", results);
-      setFiles(results || []);
+      console.log(`[s3] Znaleziono ${results.length} plików.`);
 
-      if (results && results.length > 0) {
+      // 2. Sortowanie: Najnowsze na początku (wg lastModified)
+      // lastModified zazwyczaj jest obiektem Date lub stringiem
+      results.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+
+      // 3. Pobieramy tylko 48 najnowszych plików
+      const recentFiles = results.slice(0, 48);
+      console.log(`[s3] Pobieram treść z ${recentFiles.length} najnowszych plików.`);
+
+      setFiles(recentFiles);
+
+      if (recentFiles.length > 0) {
         const historyData = [];
         
-        for (const file of results) {
+        // 4. Pobieranie treści równolegle (szybciej niż pętla for..of)
+        // Uwaga: Promise.all jest szybsze, ale przy 48 requestach S3 może przyciąć.
+        // Jeśli będzie błąd "Too Many Requests", wróć do pętli for.
+        await Promise.all(recentFiles.map(async (file) => {
           try {
             const result = await Storage.get(file.key, { download: true, level: "public" });
             const text = await result.Body.text();
@@ -207,13 +158,13 @@ const mapJsonToDashboardData = (json) => {
           } catch (err) {
             console.warn(`Błąd ładowania ${file.key}:`, err);
           }
-        }
+        }));
         
-        // Sortujemy historię chronologicznie
+        // 5. Sortujemy historię chronologicznie (od najstarszego do najnowszego) dla wykresu
         historyData.sort((a, b) => (a.lastUpdate || 0) - (b.lastUpdate || 0));
         setHistory(historyData);
         
-        // Ustawiamy najnowszy pomiar jako measurement
+        // 6. Ustawiamy najnowszy pomiar jako measurement
         if (historyData.length > 0) {
           setMeasurement(historyData[historyData.length - 1]);
         }
@@ -225,159 +176,84 @@ const mapJsonToDashboardData = (json) => {
     }
   };
 
-  const fetchData = async (key) => {
-    // try {
-    //   const result = await Storage.get(key, { download: true, level: "public" });
-    //   const text = await result.Body.text();
-    //   setFileContent(text);
-    //   setError("");
-    // } catch (err) {
-    //   setError(String(err));
-    // }
-     try {
-      const result = await Storage.get(key, { download: true, level: "public" });
-      const text = await result.Body.text();
-      setFileContent(text);
-      
-      const obj = JSON.parse(text);
-      const dashData = mapJsonToDashboardData(obj);
-      setMeasurement(dashData);
-      setError("");
-    } catch (err) {
-      setError(String(err));
+  const handleClaim = async () => {
+    try {
+      if (!user) {
+        setClaimStatus("Zaloguj się najpierw.");
+        return;
+      }
+      if (!thing || !nonce) {
+        setClaimStatus("Błąd: Wypełnij oba pola.");
+        return;
+      }
+
+      setClaimStatus("Wysyłam kod do stacji...");
+
+      const dataTopic = `devices/${thing}/data`; 
+      let isConfirmed = false;
+
+      const subscription = PubSub.subscribe(dataTopic).subscribe({
+        next: (msg) => {
+          console.log("Odebrano pierwsze dane po sparowaniu:", msg);
+          isConfirmed = true;
+          setClaimStatus("Sparowano pomyślnie!");
+          subscription.unsubscribe();
+          setTimeout(() => loadFiles(), 2000);
+        },
+        error: (error) => console.error("Błąd subskrypcji:", error),
+      });
+
+      const creds = await Auth.currentCredentials();
+      const identityId = creds.identityId;
+
+      let headers = { "Content-Type": "application/json" };
+      try {
+        const session = await Auth.currentSession();
+        headers.Authorization = session.getIdToken().getJwtToken();
+      } catch (e) {}
+
+      const res = await fetch(CLAIM_API_URL, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ thingName: thing, identityId, nonce }),
+      });
+
+      if (!res.ok) {
+        subscription.unsubscribe();
+        setClaimStatus("Błąd serwera: Nie udało się wysłać zapytania.");
+        return;
+      }
+
+      setTimeout(() => {
+        if (!isConfirmed) {
+          subscription.unsubscribe();
+          // To nie musi być błąd, stacja może wysłać dane później, ale ostrzegamy usera
+          if(claimStatus !== "Sparowano pomyślnie!") {
+             setClaimStatus("Wysłano. Czekam na dane ze stacji (może to chwilę potrwać)...");
+          }
+        }
+      }, 15000);
+
+    } catch (e) {
+      setClaimStatus("Wystąpił błąd: " + e.message);
     }
   };
-  const handleClaim = async () => {
-  try {
-    if (!user) {
-      setClaimStatus("Zaloguj się najpierw.");
-      return;
-    }
-    if (!thing || !nonce) {
-      setClaimStatus("Błąd: Wypełnij oba pola.");
-      return;
-    }
 
-    setClaimStatus("Wysyłam kod do stacji...");
-
-    // 1. USTALAMY TEMAT, NA KTÓRYM STACJA POWINNA ZARAZ COŚ WYŚLAĆ
-    // Zakładamy, że po sparowaniu ESP32 publikuje dane na ten temat:
-    const dataTopic = `devices/${thing}/data`; 
-    let isConfirmed = false;
-
-    // 2. SUBSKRYPCJA - Czekamy na pierwszy znak życia od stacji
-    const subscription = PubSub.subscribe(dataTopic).subscribe({
-      next: (msg) => {
-        console.log("Odebrano pierwsze dane po sparowaniu:", msg);
-        isConfirmed = true;
-        setClaimStatus("Sparowano pomyślnie!");
-        subscription.unsubscribe();
-        
-        // Odświeżamy listę plików, bo stacja pewnie właśnie wysłała pierwszy plik do S3
-        setTimeout(() => loadFiles(), 2000);
-      },
-      error: (error) => console.error("Błąd subskrypcji:", error),
-      close: () => console.log("Subskrypcja zakończona"),
-    });
-
-    // 3. WYSYŁKA KODU PRZEZ LAMBDĘ (Twoja obecna Lambda)
-    const creds = await Auth.currentCredentials();
-    const identityId = creds.identityId;
-
-    let headers = { "Content-Type": "application/json" };
-    try {
-      const session = await Auth.currentSession();
-      headers.Authorization = session.getIdToken().getJwtToken();
-    } catch (e) {}
-
-    const res = await fetch(CLAIM_API_URL, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ thingName: thing, identityId, nonce }),
-    });
-
-    if (!res.ok) {
-      subscription.unsubscribe();
-      setClaimStatus("Błąd serwera: Nie udało się wysłać zapytania.");
-      return;
-    }
-
-    // 4. TIMEOUT - Jeśli w ciągu 15 sekund stacja nic nie wyśle, kod był zły
-    setTimeout(() => {
-      if (!isConfirmed) {
-        subscription.unsubscribe();
-        setClaimStatus("Błąd: Stacja nie odpowiedziała. Sprawdź kod na ekranie.");
-      }
-    }, 15000);
-
-  } catch (e) {
-    setClaimStatus("Wystąpił błąd: " + e.message);
-  }
-};
-
-// const handleClaim = async () => {
-//   try {
-//     if (!user) {
-//       setClaimStatus("Zaloguj się najpierw.");
-//       return;
-//     }
-//     if (!thing) {
-//       setClaimStatus("Podaj nazwę stacji.");
-//       return;
-//     }
-//     if (!nonce) {
-//       setClaimStatus("Wpisz kod autoryzacji z urządzenia.");
-//       return;
-//     }
-
-//     setClaimStatus("Przygotowuję uprawnienia...");
-//     await ensureIoTPolicyAttached();
-//     await sleep(1500);
-
-//     const creds = await Auth.currentCredentials();
-//     const identityId = creds.identityId;
-
-//     let headers = { "Content-Type": "application/json" };
-//     try {
-//       const session = await Auth.currentSession();
-//       headers.Authorization = session.getIdToken().getJwtToken();
-//     } catch {}
-
-//     const res = await fetch(CLAIM_API_URL, {
-//       method: "POST",
-//       headers,
-//       body: JSON.stringify({ thingName: thing, identityId, nonce }),
-//     });
-
-//     if (!res.ok) {
-//       const bodyText = await res.text().catch(() => "");
-//       throw new Error(`Błąd API: ${bodyText}`);
-//     }
-
-//     setClaimStatus("Sparowano pomyślnie. Urządzenie wkrótce zacznie wysyłać dane.");
-//     setTimeout(() => loadFiles(), 5000);
-//   } catch (e) {
-//     setClaimStatus("Wystąpił błąd podczas parowania: " + String(e.message));
-//   }
-// };
-
-  // ===== Hub (nasłuch logowania/wylogowania) =====
   useEffect(() => {
     const unsub = Hub.listen("auth", async ({ payload: { event } }) => {
-      console.log("[hub] event:", event);
       if (event === "signIn" || event === "cognitoHostedUI") {
         await checkUser();
       } else if (event === "signOut") {
         setUser(null);
         setFiles([]);
-        setFileContent("");
+        setHistory([]);
+        setMeasurement(null);
       }
     });
     checkUser();
     return () => unsub();
   }, []);
 
-  // ===== UI =====
   return (
     <div>
       {!user ? (
@@ -387,37 +263,32 @@ const mapJsonToDashboardData = (json) => {
           <Footer />
         </>
       ) : (
-          <>
-            <NavBar LogoutLoginText="Wyloguj się" onAuthClick={handleSignOut} />
-            
-            <section id="live-data" className="page-section">
+        <>
+          <NavBar LogoutLoginText="Wyloguj się" onAuthClick={handleSignOut} />
+          
+          <section id="live-data" className="page-section">
             {measurement && <WeatherDashboard data={measurement} />}
-            </section>
-          
-            <section id="forecast" className="page-section">
-          <CitySearch />
-         
-            </section>
-                    <section id="history" className="page-section">
-          <HistoryPanel history={history} />
-        </section>
+          </section>
+        
+          <section id="forecast" className="page-section">
+            <CitySearch />
+          </section>
 
+          <section id="history" className="page-section">
+            <HistoryPanel history={history} />
+          </section>
 
-            {/* Zastąp stary formularz tym komponentem */}
           <section id="pairing" className="page-section">
-          <StationClaimPanel 
-            thing={thing}
-            setThing={setThing}
-            nonce={nonce}
-            setNonce={setNonce}
-            handleClaim={handleClaim}
-            claimStatus={claimStatus}
-              />
-        </section>
-                      <Footer/>
-          
-
-          
+            <StationClaimPanel 
+              thing={thing}
+              setThing={setThing}
+              nonce={nonce}
+              setNonce={setNonce}
+              handleClaim={handleClaim}
+              claimStatus={claimStatus}
+            />
+          </section>
+          <Footer/>
         </>
       )}
     </div>

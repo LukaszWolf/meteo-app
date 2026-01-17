@@ -3,7 +3,7 @@ export default function Landing({ onSignIn }) {
     <main className="landing">
       {/* HERO */}
       <section className="hero">
-        <h1>Meteo — domowa stacja pogodowa z wykorzystaniem chmury</h1>
+        <h1>Domowa stacja pogodowa z wykorzystaniem chmury</h1>
         <p className="lead">
           Zbieraj dane pogodowe przy pomocy bezprzewodowego modułu wyposażonego w czujniki. 
           Podgląd na żywo historia i prognoza pogody w przeglądarce.
@@ -19,28 +19,17 @@ export default function Landing({ onSignIn }) {
         <h2>Co to jest?</h2>
         <p>
           To zestaw, w którego skład wchodzi stacja meteo z wyświetlaczem i moduł zewnętrzny.
-          Moduł zewnętrzny wysyła dane do stacji w domu, stacja wysyła dane przez MQTT do chmury, a aplikacja webowa prezentuje je w czytelnych kafelkach i na wykresach.
+          Moduł zewnętrzny wysyła dane do stacji w domu, stacja wysyła dane przez MQTT do chmury AWS, a aplikacja webowa prezentuje je w czytelnych kafelkach i na wykresach.
         </p>
               <ul className="feature-list">
-          <li><b>Stacja meteo</b> – Wyswietlanie danych, zegar i wiele innych.</li>     
+          <li><b>Stacja</b> – Wyswietlanie danych, zegar i wiele innych.</li>     
           <li><b>Moduł zewnętrzny</b> – zbieranie danych pogodowych z czujników i przekazanie ich do stacji.</li>
-          <li><b>Dane na żywo</b> – Pobieranie danych z chmury co 10 minut.</li>
+          <li><b>Dane na żywo</b> – Pobieranie danych z chmury.</li>
           <li><b>Historia</b> – Historia pomiarów na wykresach.</li>
           <li><b>Bezpieczeństwo</b> – dane w S3, CORS, certyfikaty AWS.</li>
           <li><b>Konta użytkowników</b> – logowanie i rejestracja w Cognito.</li>
 
         </ul>
-      </section>
-
-      {/* JAK TO DZIAŁA */}
-      <section id="how" className="section">
-        <h2>Jak to działa</h2>
-        <ol className="steps">
-          <li><span className="num">1</span> Podłącz stację do zasilania.</li>
-          <li><span className="num">2</span> Podłącz urządzenie do sieci Wi-Fi.</li>
-          <li><span className="num">3</span> Zaloguj się i sparuj urządzenie w aplikacji.</li>
-          <li><span className="num">4</span> Oglądaj dane na żywo i przeglądaj historię.</li>
-        </ol>
       </section>
 
       {/* SCREEN (placeholder) */}

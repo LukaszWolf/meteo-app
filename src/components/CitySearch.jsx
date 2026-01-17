@@ -1,43 +1,56 @@
-import { useEffect, useState } from "react";
-import  CitySearchInput  from "./CitySearchInput";
+import { useEffect, useState, useRef } from "react";
+import CitySearchInput from "./CitySearchInput";
 import CitySuggestionsList from "./CitySuggestionsList";
 import SelectedCityInfo from "./SelectedCityInfo";
 
 const GEO_URL = "https://geocoding-api.open-meteo.com/v1/search";
 
 export default function CitySearch() {
-    const [query, setQuery] = useState(""); //zapytanie uzytkownika(miasto)
-    const [suggestions, setSuggestions] = useState([]); //propozycje miast
-    const [selectedCity, setSelectedCity] = useState(null); //wybrane miasto
-    
-    useEffect(() => {
-        const trimmed = query.trim();
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedCity, setSelectedCity] = useState(null);
+  
+  // Ref do trzymania identyfikatora timera
+  const debounceRef = useRef(null);
 
-        if (trimmed.length < 2) {
-            setSuggestions([]);
-            return;
-        }
+  useEffect(() => {
+    // Czyścimy poprzedni timer przy każdej zmianie query
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
 
-        const url = `${GEO_URL}?name=${encodeURIComponent(trimmed)}` +
-        `&count=5&language=pl&format=json`;
+    const trimmed = query.trim();
 
-  fetch(url)
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error("Error fetching city suggestions");
-      }
-      return res.json();
-    })
-    .then((data) => {
-      setSuggestions(data.results || []);
-    })
-    .catch((err) => {
-      console.error(err);
+    if (trimmed.length < 2) {
       setSuggestions([]);
-    });
-    }, [query]);
-    
-    return (
+      return;
+    }
+
+    // Ustawiamy nowy timer (500ms)
+    debounceRef.current = setTimeout(() => {
+      const url = `${GEO_URL}?name=${encodeURIComponent(trimmed)}&count=5&language=pl&format=json`;
+
+      fetch(url)
+        .then((res) => {
+          if (!res.ok) throw new Error("Error fetching city suggestions");
+          return res.json();
+        })
+        .then((data) => {
+          setSuggestions(data.results || []);
+        })
+        .catch((err) => {
+          console.error(err);
+          setSuggestions([]);
+        });
+    }, 500); // <-- 500ms opóźnienia
+
+    // Cleanup function: czyści timer jeśli komponent zostanie odmontowany
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query]);
+
+  return (
     <section className="city-search-section">
       <div className="city-search-card">
         <div className="city-search-header">
@@ -59,6 +72,8 @@ export default function CitySearch() {
             onSelect={(city) => {
               console.log("Wybrane miasto:", city);
               setSelectedCity(city);
+              // Opcjonalnie: czyścimy podpowiedzi po wyborze
+              setSuggestions([]); 
             }}
           />
         </div>

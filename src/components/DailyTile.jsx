@@ -1,4 +1,5 @@
 // src/components/DailyTile.jsx
+import { getWeatherIcon } from "../utils/weatherUtils";
 
 export default function DailyTile({ item }) {
   return (
@@ -14,29 +15,26 @@ export default function DailyTile({ item }) {
         flexDirection: "column",
         alignItems: "center",
         fontSize: 12,
+        minWidth: "80px"
       }}
     >
       <div style={{ fontWeight: 600, marginBottom: 4 }}>
-        {item.label}  {/* np. "Śr 27.11" */}
+        {item.label}
       </div>
 
-      {/* tu później wstawimy ikonkę wg item.code */}
-      <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>
-        {Math.round(item.tMax)}° / {Math.round(item.tMin)}°
+      {/* IKONA POGODY */}
+      <div style={{ fontSize: "28px", marginBottom: "4px" }}>
+        {getWeatherIcon(item.code)}
       </div>
 
-      {item.sunrise && (
-        <div style={{ opacity: 0.8 }}>↑ {item.sunrise}</div>
-      )}
-      {item.sunset && (
-        <div style={{ opacity: 0.8 }}>↓ {item.sunset}</div>
-      )}
+      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 2 }}>
+        {Math.round(item.tMax)}° <span style={{ opacity: 0.6, fontSize: "0.9em" }}>/ {Math.round(item.tMin)}°</span>
+      </div>
 
-      {item.code != null && (
-        <div style={{ opacity: 0.7, marginTop: 4, fontSize: 11 }}>
-          kod: {item.code}
-        </div>
-      )}
+      <div style={{ fontSize: "10px", opacity: 0.8, marginTop: "4px", display: "flex", gap: "6px" }}>
+        {item.sunrise && <span>↑ {item.sunrise}</span>}
+        {item.sunset && <span>↓ {item.sunset}</span>}
+      </div>
     </div>
   );
 }
