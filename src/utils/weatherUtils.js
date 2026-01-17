@@ -29,7 +29,6 @@ export const getWeatherIcon = (code) => {
       return '🌧️';  // Deszcz
     case 66:
     case 67:
-      return '🥶';  // Marznący deszcz
     case 71:
     case 73:
     case 75:
