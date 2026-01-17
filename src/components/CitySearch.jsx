@@ -1,20 +1,46 @@
+/**
+ * @file CitySearch.jsx
+ * @description A container component for searching locations via Open-Meteo Geocoding API.
+ * It handles the search state, debouncing, and fetching logic.
+ */
+
 import { useEffect, useState, useRef } from "react";
 import CitySearchInput from "./CitySearchInput";
 import CitySuggestionsList from "./CitySuggestionsList";
 import SelectedCityInfo from "./SelectedCityInfo";
 
+/** * Open-Meteo Geocoding API endpoint 
+ * @constant {string}
+ */
 const GEO_URL = "https://geocoding-api.open-meteo.com/v1/search";
 
+/**
+ * @component
+ * @description Orchestrates the city search workflow.
+ * Features:
+ * - Input field for typing city name.
+ * - Debounced API calls to prevent flooding the server.
+ * - Displays a list of suggestions.
+ * - Shows weather details for the selected city.
+ *
+ * @returns {JSX.Element} The complete weather forecast section.
+ */
 export default function CitySearch() {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selectedCity, setSelectedCity] = useState(null);
   
-  // Ref do trzymania identyfikatora timera
+  /** * Ref to store the timeout ID for the debounce logic. 
+   * Allows clearing the timeout across re-renders without triggering new ones.
+   */
   const debounceRef = useRef(null);
 
+  /**
+   * Effect handles the debounced search logic.
+   * Triggers API call only after the user stops typing for 500ms.
+   */
   useEffect(() => {
-    // Czyścimy poprzedni timer przy każdej zmianie query
+    // Clear previous timer on every keystroke to reset the countdown
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -26,7 +52,7 @@ export default function CitySearch() {
       return;
     }
 
-    // Ustawiamy nowy timer (500ms)
+    // Set new timer
     debounceRef.current = setTimeout(() => {
       const url = `${GEO_URL}?name=${encodeURIComponent(trimmed)}&count=5&language=pl&format=json`;
 
@@ -42,9 +68,9 @@ export default function CitySearch() {
           console.error(err);
           setSuggestions([]);
         });
-    }, 500); // <-- 500ms opóźnienia
+    }, 500); // 500ms delay
 
-    // Cleanup function: czyści timer jeśli komponent zostanie odmontowany
+    // Cleanup function: clears timer if component unmounts
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
@@ -70,10 +96,9 @@ export default function CitySearch() {
           <CitySuggestionsList
             suggestions={suggestions}
             onSelect={(city) => {
-              console.log("Wybrane miasto:", city);
+              console.log("Selected city:", city);
               setSelectedCity(city);
-              // Opcjonalnie: czyścimy podpowiedzi po wyborze
-              setSuggestions([]); 
+              setSuggestions([]); // Clear suggestions after selection
             }}
           />
         </div>

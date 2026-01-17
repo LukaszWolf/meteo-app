@@ -1,3 +1,21 @@
+/**
+ * @file NavBar.jsx
+ * @description The main navigation header component.
+ * It provides links to different sections of the page (Live Data, Forecast, History)
+ * and a dynamic authentication button.
+ */
+
+/**
+ * @component
+ * @description Renders the top navigation bar.
+ * Sticky positioned at the top of the viewport.
+ *
+ * @param {Object} props
+ * @param {string} props.LogoutLoginText - The text to display on the action button (e.g., "Login" or "Logout").
+ * @param {Function} props.onAuthClick - Callback function triggered when the action button is clicked.
+ *
+ * @returns {JSX.Element} The navigation header.
+ */
 export default function NavBar({ LogoutLoginText, onAuthClick }) {
   return (
     <header className="site-header">

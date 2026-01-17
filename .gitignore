@@ -23,6 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+aws-exports.js
+src/aws-exports.js
 node_modules
 dist
 .env

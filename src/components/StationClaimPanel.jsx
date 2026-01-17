@@ -1,6 +1,25 @@
+/**
+ * @file StationClaimPanel.jsx
+ * @description A presentational component (form) for claiming/pairing a new ESP32 device.
+ */
+
 import React from "react";
 import "../StationClaimPanel.css";
 
+/**
+ * @component
+ * @description Renders the inputs for Thing Name and Nonce code to pair a device via MQTT.
+ *
+ * @param {Object} props
+ * @param {string} props.thing - The current value of the Thing Name input.
+ * @param {Function} props.setThing - State setter for Thing Name.
+ * @param {string} props.nonce - The current value of the Nonce (pairing code) input.
+ * @param {Function} props.setNonce - State setter for Nonce.
+ * @param {Function} props.handleClaim - Callback function triggered on button click.
+ * @param {string} props.claimStatus - Status message to display (e.g., "Success", "Error").
+ *
+ * @returns {JSX.Element} The claiming form section.
+ */
 export default function StationClaimPanel({ 
   thing, 
   setThing, 
@@ -52,11 +71,11 @@ export default function StationClaimPanel({
             
           </div>
 
-{claimStatus && (
-  <div className={`claim-status-box ${claimStatus.includes("Błąd") ? "error" : claimStatus.includes("pomyślnie") ? "success" : ""}`}>
-    {claimStatus}
-  </div>
-)}
+          {claimStatus && (
+            <div className={`claim-status-box ${claimStatus.includes("Błąd") ? "error" : claimStatus.includes("pomyślnie") ? "success" : ""}`}>
+              {claimStatus}
+            </div>
+          )}
         </div>
       </div>
     </section>

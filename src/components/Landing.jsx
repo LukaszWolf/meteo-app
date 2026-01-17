@@ -1,7 +1,23 @@
+/**
+ * @file Landing.jsx
+ * @description The landing page component displayed to unauthenticated users.
+ * It explains the project's architecture (ESP32 + AWS), features, and user instructions.
+ */
+
+/**
+ * @component
+ * @description Renders the static landing page content.
+ * Includes a hero section, feature list, "How it works" steps, and a CTA button for login.
+ *
+ * @param {Object} props
+ * @param {Function} props.onSignIn - Callback function to trigger the AWS Cognito login/registration flow.
+ *
+ * @returns {JSX.Element} The landing page layout.
+ */
 export default function Landing({ onSignIn }) {
   return (
     <main className="landing">
-      {/* HERO */}
+      {/* HERO SECTION */}
       <section className="hero">
         <h1>Domowa stacja pogodowa z wykorzystaniem chmury</h1>
         <p className="lead">
@@ -14,7 +30,7 @@ export default function Landing({ onSignIn }) {
         </div>
       </section>
 
-      {/* O PRODUKCIE */}
+      {/* PRODUCT OVERVIEW */}
       <section className="section">
         <h2>Co to jest?</h2>
         <p>
@@ -32,11 +48,22 @@ export default function Landing({ onSignIn }) {
         </ul>
       </section>
 
-      {/* SCREEN (placeholder) */}
+      {/* HOW IT WORKS */}
+      <section id="how" className="section">
+        <h2>Jak to działa</h2>
+        <ol className="steps">
+          <li><span className="num">1</span> Podłącz stację do zasilania.</li>
+          <li><span className="num">2</span> Podłącz urządzenie do sieci Wi-Fi.</li>
+          <li><span className="num">3</span> Zaloguj się i sparuj urządzenie w aplikacji.</li>
+          <li><span className="num">4</span> Oglądaj dane na żywo i przeglądaj historię.</li>
+        </ol>
+      </section>
+
+      {/* SCREENSHOT PLACEHOLDER */}
       <section className="section">
         <h2>Podgląd aplikacji</h2>
         <div className="screenshot-placeholder" aria-label="Zrzut ekranu aplikacji (wkrótce)">
-          {/* Pusty biały obraz — na razie tylko prostokąt */}
+          {/* Placeholder box for future screenshots */}
         </div>
         
       </section>

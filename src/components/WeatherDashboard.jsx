@@ -1,3 +1,18 @@
+/**
+ * @file WeatherDashboard.jsx
+ * @description A visual dashboard component that displays real-time weather data received from the MQTT broker.
+ * It changes visual styles based on the UV index level.
+ */
+
+import "./WeatherDashboard.css";
+
+/**
+ * Determines the UV severity level string based on the numeric index.
+ * Used to apply dynamic CSS classes for background gradients.
+ *
+ * @param {number|null} uv - The UV Index value (0-11+).
+ * @returns {string} The severity level ('low', 'moderate', 'high', 'very-high', 'extreme').
+ */
 const getUvLevel = (uv) => {
   if (uv == null) return "low";
   if (uv <= 2) return "low";
@@ -7,13 +22,27 @@ const getUvLevel = (uv) => {
   return "extreme";
 };
 
+/**
+ * @component
+ * @description Displays tiles with Indoor and Outdoor weather metrics.
+ *
+ * @param {Object} props
+ * @param {Object} props.data - The latest measurement object.
+ * @param {number|null} props.data.indoorTemp - Indoor temperature in Celsius.
+ * @param {number|null} props.data.outdoorTemp - Outdoor temperature in Celsius.
+ * @param {number|null} props.data.pressure - Atmospheric pressure in hPa.
+ * @param {number|null} props.data.humidity - Relative humidity in %.
+ * @param {number|null} props.data.uvIndex - UV Index.
+ *
+ * @returns {JSX.Element} The dashboard grid layout.
+ */
 export default function WeatherDashboard({ data }) {
   const { indoorTemp, outdoorTemp, pressure, humidity, uvIndex } = data || {};
   const uvLevel = getUvLevel(uvIndex);
 
   return (
     <section className="dash-main-grid">
-      {/* KARTA: NA ZEWNĄTRZ */}
+      {/* CARD: OUTDOOR (Dynamic background based on UV) */}
       <div className={`dash-card dash-outdoor uv-${uvLevel}`}>
         <div className="dash-section-header">
           <span className="dash-status-dot"></span>
@@ -43,7 +72,7 @@ export default function WeatherDashboard({ data }) {
         </div>
       </div>
 
-      {/* KARTA: W DOMU */}
+      {/* CARD: INDOOR */}
       <div className="dash-card dash-indoor">
         <div className="dash-section-header">
           <span className="dash-status-dot"></span>
@@ -55,8 +84,6 @@ export default function WeatherDashboard({ data }) {
             {indoorTemp != null ? `${indoorTemp.toFixed(1)}°` : "—"}
             <span className="dash-unit">C</span>
           </div>
-          
-
         </div>
       </div>
     </section>

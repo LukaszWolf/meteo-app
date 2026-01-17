@@ -1,41 +1,59 @@
-// src/components/CityHourlyStrip.jsx
+/**
+ * @file CityHourlyStrip.jsx
+ * @description A responsive carousel component for displaying hourly weather forecast tiles (24h).
+ * Similar to CityDailyStrip, it handles horizontal scrolling and responsive resizing.
+ */
+
 import { useEffect, useState } from "react";
 import HourlyTile from "./HourlyTile";
 
+/**
+ * @component
+ * @description Renders a horizontal strip of hourly forecast tiles.
+ *
+ * @param {Object} props
+ * @param {Array<Object>} props.items - An array of hourly forecast data objects.
+ * Each item contains: { time, displayTime, temp, hum, code }.
+ *
+ * @returns {JSX.Element|null} The carousel component or null if items array is empty.
+ */
 export default function CityHourlyStrip({ items }) {
   if (!items || items.length === 0) return null;
 
+  /**
+   * Determines the number of visible tiles based on viewport width.
+   * @returns {number} Tiles count (3-6).
+   */
   const getTilesPerPage = () => {
     if (typeof window === "undefined") return 3;
     const w = window.innerWidth;
 
-    if (w < 480) return 3;   // bardzo mały ekran
-    if (w < 768) return 4;   // normalny telefon
-    if (w < 1024) return 5;  // tablet / mały laptop
-    return 6;                // większy ekran
+    if (w < 480) return 3;   // Very small screens
+    if (w < 768) return 4;   // Mobile
+    if (w < 1024) return 5;  // Tablet
+    return 6;                // Desktop
   };
 
   const [tilesPerPage, setTilesPerPage] = useState(getTilesPerPage);
   const [startIndex, setStartIndex] = useState(0);
 
-  // reagujemy na zmianę rozmiaru ekranu
+  /**
+   * Effect: Handle window resize.
+   */
   useEffect(() => {
     const onResize = () => {
       const next = getTilesPerPage();
       setTilesPerPage(next);
-      setStartIndex(0); // po zmianie układu wracamy na początek
+      setStartIndex(0); 
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // maksymalny początek tak, żeby dało się pokazać pełne okno
   const maxStart = Math.max(0, items.length - tilesPerPage);
-
   const canGoPrev = startIndex > 0;
   const canGoNext = startIndex < maxStart;
 
-  // dbamy o to, żeby startIndex nie wyjechał poza maxStart
   const safeStart = Math.min(startIndex, maxStart);
   const visibleItems = items.slice(safeStart, safeStart + tilesPerPage);
 
@@ -48,7 +66,6 @@ export default function CityHourlyStrip({ items }) {
     if (!canGoNext) return;
     setStartIndex((prev) => {
       const candidate = prev + tilesPerPage;
-      // jeśli "pełny skok" wyjeżdża poza koniec -> ustaw maxStart
       return candidate >= maxStart ? maxStart : candidate;
     });
   };
@@ -59,6 +76,7 @@ export default function CityHourlyStrip({ items }) {
         onClick={handlePrev}
         disabled={!canGoPrev}
         className="weather-strip-btn"
+        aria-label="Previous hours"
       >
         ◀
       </button>
@@ -73,6 +91,7 @@ export default function CityHourlyStrip({ items }) {
         onClick={handleNext}
         disabled={!canGoNext}
         className="weather-strip-btn"
+        aria-label="Next hours"
       >
         ▶
       </button>

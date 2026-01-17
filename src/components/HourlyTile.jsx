@@ -1,6 +1,24 @@
-// src/components/HourlyTile.jsx
+/**
+ * @file HourlyTile.jsx
+ * @description A simple presentational component representing a single hour in the forecast carousel.
+ * It displays the time, weather icon, temperature, and optional humidity.
+ */
+
 import { getWeatherIcon } from "../utils/weatherUtils";
 
+/**
+ * @component
+ * @description Renders a single tile for the hourly forecast.
+ *
+ * @param {Object} props
+ * @param {Object} props.item - The hourly forecast data object.
+ * @param {string} props.item.displayTime - Formatted time string (e.g., "14:00").
+ * @param {number} props.item.code - WMO weather code used to fetch the correct icon.
+ * @param {number} props.item.temp - Temperature in Celsius.
+ * @param {number} [props.item.hum] - Relative humidity percentage (optional).
+ *
+ * @returns {JSX.Element} A styled tile component.
+ */
 export default function HourlyTile({ item }) {
   return (
     <div
@@ -22,7 +40,7 @@ export default function HourlyTile({ item }) {
         {item.displayTime}
       </div>
       
-      {/* IKONA POGODY */}
+      {/* Weather Icon */}
       <div style={{ fontSize: "24px", marginBottom: "4px" }}>
         {getWeatherIcon(item.code)}
       </div>

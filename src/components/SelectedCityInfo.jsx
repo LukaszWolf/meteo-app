@@ -1,10 +1,20 @@
-// src/components/SelectedCityInfo.jsx
+/**
+ * @file SelectedCityInfo.jsx
+ * @description A container component that fetches and displays detailed weather information for a specific city.
+ * It communicates with the Open-Meteo API to get current weather, hourly, and daily forecasts.
+ */
+
 import { useEffect, useState } from "react";
 import CityWeatherPanel from "./CityWeatherPanel";
 
+/** * Base URL for the Open-Meteo Forecast API */
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 
-// prosty format czasu HH:MM z ISO
+/**
+ * Helper: Extracts "HH:MM" time string from an ISO 8601 date string.
+ * @param {string} isoString - Full ISO date string.
+ * @returns {string} Formatted time string.
+ */
 function formatTimeHHMM(isoString) {
   if (!isoString) return "";
   const idxT = isoString.indexOf("T");
@@ -13,11 +23,28 @@ function formatTimeHHMM(isoString) {
   return timePart.slice(0, 5); // "HH:MM"
 }
 
+/**
+ * @component
+ * @description Renders current weather details (Temp, Wind, Sunrise/Sunset) and the forecast panel.
+ * Triggers a data fetch whenever the `city` prop changes.
+ *
+ * @param {Object} props
+ * @param {Object|null} props.city - The selected city object containing geographical coordinates.
+ * @param {string} props.city.name - City name.
+ * @param {string} props.city.country - Country name.
+ * @param {number} props.city.latitude - Latitude for API request.
+ * @param {number} props.city.longitude - Longitude for API request.
+ *
+ * @returns {JSX.Element} The weather details view.
+ */
 export default function SelectedCityInfo({ city }) {
   const [weather, setWeather] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [weatherError, setWeatherError] = useState("");
 
+  /**
+   * Effect: Fetches weather data from Open-Meteo API when `city` updates.
+   */
   useEffect(() => {
     if (!city) {
       setWeather(null);
@@ -65,7 +92,7 @@ export default function SelectedCityInfo({ city }) {
     return <p>Nie wybrano miasta.</p>;
   }
 
-  // --- wyliczenie wschodu / zachodu dla "dzisiaj" ---
+  // --- Calculate sunrise/sunset for the current day ---
   let todaySunrise = null;
   let todaySunset = null;
 
@@ -77,6 +104,7 @@ export default function SelectedCityInfo({ city }) {
     weather.daily.sunset &&
     weather.current_weather?.time
   ) {
+    // Find the index corresponding to today's date in the daily forecast array
     const currentDate = weather.current_weather.time.slice(0, 10); // "YYYY-MM-DD"
     const idx = weather.daily.time.findIndex((d) => d === currentDate);
     if (idx !== -1) {
@@ -114,6 +142,7 @@ export default function SelectedCityInfo({ city }) {
         </div>
       )}
 
+      {/* Render detailed forecast panel */}
       <CityWeatherPanel weather={weather} />
     </div>
   );

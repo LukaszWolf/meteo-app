@@ -1,6 +1,21 @@
-// src/components/HistoryPanel.jsx
+/**
+ * @file HistoryPanel.jsx
+ * @description A container component that organizes historical data charts.
+ * It renders two instances of `HistoryChart` (Outdoor and Indoor) if data is available.
+ */
+
 import HistoryChart from "./HistoryChart";
 
+/**
+ * @component
+ * @description Renders the history section with charts for outdoor and indoor temperatures.
+ *
+ * @param {Object} props
+ * @param {Array<Object>} props.history - An array of historical measurement objects.
+ * Each object should contain timestamps and temperature readings.
+ *
+ * @returns {JSX.Element} The history panel with charts or a "No Data" message.
+ */
 export default function HistoryPanel({ history }) {
   console.log("HistoryPanel history:", history);
   
@@ -25,7 +40,7 @@ export default function HistoryPanel({ history }) {
           Wykresy temperatury z ostatnich godzin
         </p>
 
-        {/* Wykres Zewnętrzny */}
+        {/* Outdoor Chart Configuration */}
         <HistoryChart 
           history={history} 
           dataKey="outdoorTemp" 
@@ -34,7 +49,7 @@ export default function HistoryPanel({ history }) {
           gradientId="gradOutdoor"
         />
 
-        {/* Wykres Wewnętrzny */}
+        {/* Indoor Chart Configuration */}
         <HistoryChart 
           history={history} 
           dataKey="indoorTemp" 
