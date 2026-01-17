@@ -4,7 +4,7 @@
  * It changes visual styles based on the UV index level.
  */
 
-import "./WeatherDashboard.css";
+import "../WeatherDashboard.css";
 
 /**
  * Determines the UV severity level string based on the numeric index.
