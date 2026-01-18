@@ -1,94 +1,109 @@
 /**
- * @file useStationClaim.js
- * @description Custom hook responsible for the "Claiming" (Pairing) process.
- * It sends a claim request via API Gateway and listens for a confirmation
- * message via MQTT.
+ * @file useStationData.js
+ * @description Custom hook for fetching and managing station telemetry data
+ * from AWS S3. It retrieves historical data files, parses them, and formats
+ * them for the dashboard.
  */
 
-import {Auth, PubSub} from 'aws-amplify';
-import {useState} from 'react';
-
-/** * API Gateway endpoint for the Claim Lambda function */
-const CLAIM_API_URL =
-    'https://rp6817rcg4.execute-api.eu-north-1.amazonaws.com/claim/reply';
+import {Auth, Storage} from 'aws-amplify';
+import {useEffect, useState} from 'react';
 
 /**
- * @function useStationClaim
- * @description Manages the state and logic for claiming a new device.
- *
- * @param {Object} user - The authenticated user.
- * @param {Function} onSuccess - Callback function to execute after successful
- *     claiming (e.g., reload data).
- *
- * @returns {Object} Claim hook object containing:
- * - thing {string}: Current input value for Thing Name.
- * - setThing {Function}: Setter for Thing Name.
- * - nonce {string}: Current input value for Nonce code.
- * - setNonce {Function}: Setter for Nonce code.
- * - claimStatus {string}: Status message.
- * - handleClaim {Function}: Function to initiate the claim process.
+ * Helper: Maps raw JSON data from S3 to the dashboard's expected format.
+ * Performs unit conversions (e.g., dividing raw temp by 10).
+ * @param {Object} json - Raw JSON object from the station.
+ * @returns {Object} Normalized data object.
  */
-export function useStationClaim(user, onSuccess) {
-  const [thing, setThing] = useState('');
-  const [nonce, setNonce] = useState('');
-  const [claimStatus, setClaimStatus] = useState('');
+const mapJsonToDashboardData = (json) => {
+  return {
+    outdoorTemp: json.outdoorTemperatureRead != null ?
+        json.outdoorTemperatureRead / 10 :
+        null,
+    humidity: json.humidityRead ?? null,
+    pressure: json.pressureRead ?? null,
+    uvIndex: json.uvIndexRead != null ? json.uvIndexRead / 10 : null,
+    indoorTemp:
+        json.indoorTemperatureRead != null ? json.indoorTemperatureRead : null,
+    lastUpdate: json.ts ?? null,
+  };
+};
 
-  const handleClaim = async () => {
+/**
+ * @function useStationData
+ * @description Manages data fetching for the station dashboard.
+ *
+ * @param {Object} user - The authenticated user object.
+ * @returns {Object} Data object containing:
+ * - history {Array}: Chronologically sorted array of historical measurements.
+ * - measurement {Object|null}: The single most recent measurement.
+ * - loading {boolean}: Fetching status.
+ * - reloadData {Function}: Function to manually trigger a data refresh.
+ */
+export function useStationData(user) {
+  const [history, setHistory] = useState([]);
+  const [measurement, setMeasurement] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const loadFiles = async () => {
+    if (!user) return;
+
+    setLoading(true);
     try {
-      if (!user) {
-        setClaimStatus('Zaloguj się najpierw.');
-        return;
-      }
-      if (!thing || !nonce) {
-        setClaimStatus('Wypełnij oba pola.');
-        return;
-      }
-
-      setClaimStatus('Wysyłam kod...');
-      const dataTopic = `devices/${thing}/data`;
-      let isConfirmed = false;
-
-      // 1. Subscribe to the device's data topic to listen for the first message
-      const subscription = PubSub.subscribe(dataTopic).subscribe({
-        next: (msg) => {
-          isConfirmed = true;
-          setClaimStatus('Sparowano pomyślnie!');
-          subscription.unsubscribe();
-          if (onSuccess) onSuccess();  // Refresh dashboard data
-        },
-        error: (e) => console.error(e),
-      });
-
-      // 2. Send the claim request to the API
       const creds = await Auth.currentCredentials();
-      let headers = {'Content-Type': 'application/json'};
-      try {
-        const session = await Auth.currentSession();
-        headers.Authorization = session.getIdToken().getJwtToken();
-      } catch {
-      }
+      const id = creds.identityId;
 
-      await fetch(CLAIM_API_URL, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(
-            {thingName: thing, identityId: creds.identityId, nonce}),
-      });
+      // 1. List all files in the user's station folder
+      const {results} =
+          await Storage.list(`users/${id}/stations/`, {level: 'public'});
 
-      // 3. Set a timeout to handle cases where no data is received
-      setTimeout(() => {
-        if (!isConfirmed) {
-          subscription.unsubscribe();
-          if (claimStatus !== 'Sparowano pomyślnie!') {
-            setClaimStatus('Wysłano. Czekam na dane...');
+      // 2. Sort files by modification date (newest first)
+      results.sort(
+          (a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+
+      // 3. Limit to the 48 most recent files for performance
+      const recentFiles = results.slice(0, 48);
+
+      if (recentFiles.length > 0) {
+        const historyData = [];
+
+        // Parallel download of file contents
+        await Promise.all(recentFiles.map(async (file) => {
+          try {
+            const result =
+                await Storage.get(file.key, {download: true, level: 'public'});
+            const text = await result.Body.text();
+            const obj = JSON.parse(text);
+            historyData.push(mapJsonToDashboardData(obj));
+          } catch (err) {
+            console.warn(`Error parsing file ${file.key}`, err);
           }
-        }
-      }, 15000);
+        }));
 
-    } catch (e) {
-      setClaimStatus('Błąd: ' + e.message);
+        // Sort history chronologically (oldest -> newest) for charts
+        historyData.sort((a, b) => (a.lastUpdate || 0) - (b.lastUpdate || 0));
+        setHistory(historyData);
+
+        // Set the latest measurement
+        if (historyData.length > 0) {
+          setMeasurement(historyData[historyData.length - 1]);
+        }
+      }
+    } catch (err) {
+      console.error('Data fetch error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  return {thing, setThing, nonce, setNonce, claimStatus, handleClaim};
+  // Auto-load when user logs in
+  useEffect(() => {
+    if (user) {
+      loadFiles();
+    } else {
+      setHistory([]);
+      setMeasurement(null);
+    }
+  }, [user]);
+
+  return {history, measurement, loading, reloadData: loadFiles};
 }

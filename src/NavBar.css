@@ -2,7 +2,6 @@
   position: sticky; 
   top: 8px; 
   z-index: 50;
-  /* Zmieniono na padding-inline dla lepszej kontroli */
   padding: 0 16px;
   width: min(980px, 94%);      
   margin: 8px auto 0;          
@@ -14,12 +13,12 @@
 }
 
 .site-header .container {
-  min-height: 56px; /* Zmieniono z height na min-height */
-  padding: 8px 0;   /* Dodano pionowy padding dla zawijania */
+  min-height: 56px; 
+  padding: 8px 0;   
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;  /* Pozwala na przejście menu pod logo na małym ekranie */
+  flex-wrap: wrap;  
   gap: 10px;
 }
 
@@ -34,15 +33,14 @@
 .menu {
   list-style: none;
   display: flex;
-  gap: 4px; /* Zmniejszony bazowy odstęp */
+  gap: 4px; 
   margin: 0;
   padding: 0;
   align-items: center;
-  flex-wrap: wrap; /* Pozwala elementom menu układać się w rzędach */
+  flex-wrap: wrap;
   justify-content: center;
 }
 
-/* Kropki - separatory */
 .menu li span {
   color: rgba(169, 180, 200, 0.4);
   font-size: 10px;
@@ -54,7 +52,7 @@
   color: #a9b4c8;
   padding: 6px 8px;
   border-radius: 10px;
-  font-size: 13px; /* Nieco mniejszy font na start */
+  font-size: 13px;
   white-space: nowrap;
 }
 

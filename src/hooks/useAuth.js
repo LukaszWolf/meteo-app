@@ -8,7 +8,7 @@
 import {Auth, Hub} from 'aws-amplify';
 import {useEffect, useState} from 'react';
 
-/** * API Endpoint for attaching IoT Policy to Cognito Identity */
+/** API Endpoint for attaching IoT Policy to Cognito Identity */
 const ATTACH_API_URL =
     'https://wjngrfdjy3.execute-api.eu-north-1.amazonaws.com/attach';
 
@@ -37,6 +37,7 @@ export function useAuth() {
         const session = await Auth.currentSession();
         headers.Authorization = session.getIdToken().getJwtToken();
       } catch {
+        // Token might not be available, proceed without it if necessary
       }
 
       await fetch(ATTACH_API_URL, {

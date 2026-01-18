@@ -15,7 +15,7 @@
 }
 
 .dash-card {
-  /* Twoja baza kolorystyczna z zachowaniem przezroczystości */
+
   background: rgba(11, 18, 32, 0.82);
   border: 1px solid rgba(125, 140, 160, 0.28);
   border-radius: 20px;
@@ -27,7 +27,6 @@
   backdrop-filter: blur(12px);
 }
 
-/* Akcenty kolorystyczne na krawędzi (zamiast ikon) */
 .dash-outdoor::before {
   content: "";
   position: absolute;
@@ -44,7 +43,6 @@
   background: linear-gradient(to bottom, #34d399, #3b82f6);
 }
 
-/* Nagłówek sekcji z kropką statusu */
 .dash-section-header {
   display: flex;
   align-items: center;
@@ -75,7 +73,6 @@
   margin: 0;
 }
 
-/* Główna temperatura */
 .dash-temp-display {
   font-size: 52px;
   font-weight: 800;
@@ -94,7 +91,6 @@
   font-weight: 400;
 }
 
-/* Siatka detali (Ciśnienie, Wilgotność, UV) */
 .dash-details-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -122,7 +118,6 @@
   color: #f3f4f6;
 }
 
-/* Responsywność dla mniejszych ekranów */
 @media (max-width: 600px) {
   .dash-card {
     padding: 20px;
@@ -133,6 +128,6 @@
   }
 
   .dash-details-grid {
-    grid-template-columns: 1fr 1fr; /* dwa rzędy na telefonie */
+    grid-template-columns: 1fr 1fr; 
   }
 }
