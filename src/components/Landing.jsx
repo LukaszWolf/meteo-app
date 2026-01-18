@@ -47,16 +47,7 @@ export default function Landing({ onSignIn }) {
         </ul>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how" className="section">
-        <h2>Jak to działa</h2>
-        <ol className="steps">
-          <li><span className="num">1</span> Podłącz stację do zasilania.</li>
-          <li><span className="num">2</span> Podłącz urządzenie do sieci Wi-Fi.</li>
-          <li><span className="num">3</span> Zaloguj się i sparuj urządzenie w aplikacji.</li>
-          <li><span className="num">4</span> Oglądaj dane na żywo i przeglądaj historię.</li>
-        </ol>
-      </section>
+
 
 {/* <section className="section">
         <h2>Podgląd aplikacji</h2>
