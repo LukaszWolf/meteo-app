@@ -72,10 +72,9 @@
   font-size: 13px;
 }
 
-/* --- RESPONSYWNOŚĆ DLA TELEFONU --- */
 @media (max-width: 760px) {
   .site-header .container {
-    flex-direction: column; /* Na małych ekranach Logo na górze, Menu pod nim */
+    flex-direction: column; 
     height: auto;
     padding: 12px 0;
   }
@@ -86,7 +85,7 @@
     justify-content: center;
   }
 
-  /* Ukrywamy kropki na telefonie, żeby zaoszczędzić miejsce */
+  
   .menu li span {
     display: none;
   }
@@ -98,6 +97,6 @@
 
   .cta {
     margin-top: 5px;
-    width: 100%; /* Przycisk wyloguj na całą szerokość na samym dole menu */
+    width: 100%; 
   }
 }
