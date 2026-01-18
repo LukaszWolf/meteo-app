@@ -33,7 +33,7 @@ export default function Landing({ onSignIn }) {
       <section className="section">
         <h2>Co to jest?</h2>
         <p>
-          To zestaw, w którego skład wchodzi stacja meteo z wyświetlaczem i moduł zewnętrzny.
+          To zestaw, w którego skład wchodzi stacja domowa z wyświetlaczem i moduł zewnętrzny.
           Moduł zewnętrzny wysyła dane do stacji w domu, stacja wysyła dane przez MQTT do chmury AWS, a aplikacja webowa prezentuje je w czytelnych kafelkach i na wykresach.
         </p>
               <ul className="feature-list">
