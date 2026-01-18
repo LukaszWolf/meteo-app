@@ -22,11 +22,10 @@ export default function Landing({ onSignIn }) {
         <h1>Domowa stacja pogodowa z wykorzystaniem chmury</h1>
         <p className="lead">
           Zbieraj dane pogodowe przy pomocy bezprzewodowego modułu wyposażonego w czujniki. 
-          Podgląd na żywo historia i prognoza pogody w przeglądarce.
+          Podgląd na żywo historia i prognoza pogody w aplikacji.
         </p>
         <div className="cta-row">
           <button className="btn btn-primary" onClick={onSignIn}>Zaloguj / Załóż konto</button>
-          <a className="btn btn-ghost" href="#how">Jak to działa</a>
         </div>
       </section>
 
@@ -43,7 +42,7 @@ export default function Landing({ onSignIn }) {
           <li><b>Dane na żywo</b> – Pobieranie danych z chmury.</li>
           <li><b>Historia</b> – Historia pomiarów na wykresach.</li>
           <li><b>Bezpieczeństwo</b> – dane w S3, CORS, certyfikaty AWS.</li>
-          <li><b>Konta użytkowników</b> – logowanie i rejestracja w Cognito.</li>
+          <li><b>Konta użytkowników</b> – logowanie i rejestracja z wykorzystaniem Cognito.</li>
 
         </ul>
       </section>
@@ -59,15 +58,13 @@ export default function Landing({ onSignIn }) {
         </ol>
       </section>
 
-      {/* SCREENSHOT PLACEHOLDER */}
-      <section className="section">
+{/* <section className="section">
         <h2>Podgląd aplikacji</h2>
         <div className="screenshot-placeholder" aria-label="Zrzut ekranu aplikacji (wkrótce)">
-          {/* Placeholder box for future screenshots */}
+          
         </div>
-        
       </section>
-
+      */}
     </main>
   );
 }

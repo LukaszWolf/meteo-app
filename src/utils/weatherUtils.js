@@ -10,7 +10,7 @@
  * Open-Meteo API data.
  *
  * @param {number|null} code - The WMO weather code (e.g., 0, 1, 45, 95).
- * @returns {string} An emoji string representing the weather (e.g., "☀️", "🌧️").
+ * @returns {string} An emoji string representing the weather.
  * Returns '' if the code is null or unrecognized.
  */
 
